@@ -1,0 +1,3019 @@
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    margin: 0;
+    background: #FAFAF7;
+    color: #1F1F1E;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .app { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  .header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  h1 { font-size: 22px; font-weight: 500; margin: 0 0 4px; }
+  .subtitle { color: #5F5E5A; font-size: 13px; margin-bottom: 20px; }
+  .tabs { display: flex; gap: 4px; border-bottom: 0.5px solid rgba(0,0,0,0.15); margin-bottom: 24px; flex-wrap: wrap; }
+  .tab { padding: 10px 16px; background: transparent; border: none; cursor: pointer; font-size: 14px; color: #5F5E5A; border-bottom: 2px solid transparent; margin-bottom: -1px; font-family: inherit; }
+  .tab.active { color: #1F1F1E; border-bottom-color: #1F1F1E; font-weight: 500; }
+  .tab:hover:not(.active) { color: #1F1F1E; }
+  .view { display: none; }
+  .view.active { display: block; }
+  .card { background: #fff; border: 0.5px solid rgba(0,0,0,0.15); border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; }
+  .metric-card { background: #F1EFE8; border-radius: 8px; padding: 14px 16px; }
+  .metric-label { font-size: 12px; color: #5F5E5A; margin-bottom: 4px; }
+  .metric-value { font-size: 22px; font-weight: 500; }
+  .metric-sub { font-size: 12px; color: #888780; margin-top: 2px; }
+  .grid { display: grid; gap: 12px; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .row { display: flex; gap: 12px; align-items: center; }
+  .row-between { display: flex; justify-content: space-between; align-items: center; }
+  button.btn, .btn { background: #fff; border: 0.5px solid rgba(0,0,0,0.3); border-radius: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer; font-family: inherit; color: #1F1F1E; transition: background 0.1s; }
+  .btn:hover { background: #F1EFE8; }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: #1F1F1E; color: #fff; border-color: #1F1F1E; }
+  .btn-primary:hover { background: #444441; }
+  .btn-danger { color: #A32D2D; border-color: rgba(163,45,45,0.3); }
+  .btn-danger:hover { background: #FCEBEB; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  input, select, textarea { font-family: inherit; font-size: 14px; padding: 8px 10px; border: 0.5px solid rgba(0,0,0,0.3); border-radius: 8px; background: #fff; width: 100%; }
+  textarea { font-family: ui-monospace, monospace; font-size: 13px; resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: none; box-shadow: 0 0 0 2px rgba(31,31,30,0.15); border-color: rgba(0,0,0,0.5); }
+  label { display: block; font-size: 12px; color: #5F5E5A; margin-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 12px; font-weight: 500; color: #5F5E5A; padding: 8px 12px; border-bottom: 0.5px solid rgba(0,0,0,0.15); }
+  td { padding: 8px 12px; border-bottom: 0.5px solid rgba(0,0,0,0.08); font-size: 13px; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #FAFAF7; }
+  .empty { text-align: center; padding: 32px; color: #888780; font-size: 13px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 500; }
+  .badge-ok { background: #EAF3DE; color: #3B6D11; }
+  .badge-low { background: #FAEEDA; color: #854F0B; }
+  .badge-out { background: #FCEBEB; color: #A32D2D; }
+  .badge-gray { background: #F1EFE8; color: #5F5E5A; }
+  .badge-blue { background: #E6F1FB; color: #185FA5; }
+  .badge-cat { background: #EEEDFE; color: #3C3489; }
+  .ingredient-row { display: grid; grid-template-columns: 1fr 80px 80px 1fr 1fr 28px; gap: 6px; align-items: center; margin-bottom: 6px; }
+  .ingredient-row input, .ingredient-row select { padding: 6px 8px; font-size: 12px; }
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .modal { background: #fff; border-radius: 12px; padding: 24px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; }
+  .modal h2 { margin: 0 0 16px; font-size: 18px; font-weight: 500; }
+  .field { margin-bottom: 12px; }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .icon-btn { background: transparent; border: none; padding: 4px 6px; cursor: pointer; color: #5F5E5A; border-radius: 4px; font-size: 14px; }
+  .icon-btn:hover { background: #F1EFE8; color: #1F1F1E; }
+  .help-text { font-size: 11px; color: #888780; margin-top: 4px; }
+  .small { font-size: 12px; color: #5F5E5A; }
+  .loading { text-align: center; padding: 40px; color: #888780; }
+  .conv-section { background: #FAFAF7; padding: 10px 12px; border-radius: 8px; margin-top: 8px; font-size: 12px; }
+  .alias-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+  .alias-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #FAFAF7;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  .alias-text { color: #1F1F1E; word-break: break-all; }
+  /* Receipt review (legacy classes — kept in case anything still references them) */
+  .price-change { font-size: 11px; }
+  .price-up { color: #A32D2D; }
+  .price-down { color: #3B6D11; }
+  .price-same { color: #888780; }
+
+  /* Receipt review (new table-based UI) */
+  .rcpt-header {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    background: #F1EFE8;
+    border-radius: 8px;
+  }
+  .rcpt-summary {
+    margin-bottom: 8px;
+    color: #5F5E5A;
+  }
+  .rcpt-table-wrap {
+    max-height: 60vh;
+    overflow-y: auto;
+    border: 0.5px solid rgba(0,0,0,0.15);
+    border-radius: 8px;
+  }
+  .rcpt-table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .rcpt-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 500;
+    color: #5F5E5A;
+    padding: 8px 10px;
+    border-bottom: 0.5px solid rgba(0,0,0,0.15);
+    background: #FAFAF7;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  .rcpt-table td {
+    padding: 8px 10px;
+    border-bottom: 0.5px solid rgba(0,0,0,0.06);
+    font-size: 12px;
+    vertical-align: middle;
+  }
+  .rcpt-table tr:last-child td { border-bottom: none; }
+  .rcpt-row-skip td { opacity: 0.45; }
+  .rcpt-row-ignore td { opacity: 0.75; }
+  .rcpt-row-ignore td .rcpt-new-grid { opacity: 0.9; }
+
+  /* Inline new-product editor (when a row has no match) */
+  .rcpt-new-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .rcpt-new-cat { grid-column: 1 / -1; }
+  .rcpt-new-name { grid-column: 1 / -1; }
+  .rcpt-new-grid input,
+  .rcpt-new-grid select {
+    padding: 4px 6px;
+    font-size: 11px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .rcpt-new-pkgsize { grid-column: 1; }
+  .rcpt-new-unit { grid-column: 2; }
+  .rcpt-new-price { grid-column: 1 / -1; }
+
+  .rcpt-match-existing-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 4px;
+  }
+  .rcpt-match-existing-link {
+    background: transparent;
+    border: none;
+    color: #5F5E5A;
+    font-size: 10px;
+    cursor: pointer;
+    padding: 1px 4px;
+    font-family: inherit;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 2px;
+  }
+  .rcpt-match-existing-link:hover {
+    color: #1F1F1E;
+    text-decoration-style: solid;
+  }
+
+  .rcpt-price-input {
+    width: 100%;
+    text-align: right;
+    padding: 4px 6px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    box-sizing: border-box;
+  }
+
+  .rcpt-mark-recv {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: #5F5E5A;
+    cursor: pointer;
+  }
+  .rcpt-mark-recv input { margin: 0; }
+
+  .info-box { background: #E6F1FB; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; font-size: 13px; color: #0C447C; }
+  .history-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 12px; border-bottom: 0.5px dashed rgba(0,0,0,0.08); gap: 12px; }
+  .history-row:last-child { border-bottom: none; }
+  details summary { cursor: pointer; color: #5F5E5A; font-size: 12px; user-select: none; }
+  details summary:hover { color: #1F1F1E; }
+  .cat-tree { font-size: 13px; }
+  .cat-node { padding: 6px 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .cat-node:hover { background: #F1EFE8; }
+  .cat-node-name { display: flex; align-items: center; gap: 6px; }
+  .cat-count { font-size: 11px; color: #888780; }
+  .cat-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.1s; }
+  .cat-node:hover .cat-actions { opacity: 1; }
+  .cat-children { margin-left: 18px; border-left: 0.5px solid rgba(0,0,0,0.1); padding-left: 8px; }
+  .category-section { margin-bottom: 16px; }
+  .category-section-header { font-weight: 500; padding: 8px 0; color: #5F5E5A; font-size: 13px; border-bottom: 0.5px solid rgba(0,0,0,0.15); margin-bottom: 6px; display: flex; justify-content: space-between; }
+
+  /* New section header for top-level group (outside the table) */
+  .inv-section { margin-bottom: 24px; }
+  .inv-section-header {
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    color: #1F1F1E;
+    padding: 4px 4px 10px;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .inv-section-header .small { color: #888780; }
+
+  /* Sub-category label row inside a section table */
+  tr.subgroup-row td {
+    background: transparent;
+    font-weight: 500;
+    font-size: 12px;
+    color: #5F5E5A;
+    padding: 10px 12px 4px;
+    border-bottom: none;
+  }
+  tr.subgroup-row:hover td { background: transparent; }
+  tr.subgroup-row td .subgroup-count {
+    font-weight: 400;
+    color: #888780;
+    margin-left: 8px;
+    font-size: 11px;
+  }
+  tr.empty-cat-row td {
+    background: transparent;
+    border-bottom: 0.5px solid rgba(0,0,0,0.06);
+    padding: 4px 12px 10px;
+    color: #888780;
+  }
+  tr.empty-cat-row:hover td { background: transparent; }
+
+  /* Recipe card layout */
+  .recipe-card { margin-bottom: 16px; }
+  .recipe-selector {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .recipe-chip {
+    background: #fff;
+    border: 0.5px solid rgba(0,0,0,0.2);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    color: #5F5E5A;
+    transition: background 0.1s, color 0.1s, border-color 0.1s;
+  }
+  .recipe-chip:hover {
+    background: #F1EFE8;
+    color: #1F1F1E;
+  }
+  .recipe-chip.active {
+    background: #1F1F1E;
+    color: #fff;
+    border-color: #1F1F1E;
+    font-weight: 500;
+  }
+  .rcp-controls {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding: 10px 14px;
+    background: #F1EFE8;
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  .rcp-control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .rcp-batch-input {
+    width: 70px;
+    padding: 4px 8px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: right;
+  }
+  .rcp-warning {
+    background: #FAEEDA;
+    color: #854F0B;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    margin-bottom: 8px;
+    border: 0.5px solid rgba(133,79,11,0.2);
+  }
+  .rcp-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 500;
+    color: #5F5E5A;
+    padding: 8px 12px;
+    border-bottom: 0.5px solid rgba(0,0,0,0.15);
+  }
+  .rcp-table td {
+    padding: 6px 12px;
+    border-bottom: 0.5px solid rgba(0,0,0,0.06);
+    font-size: 12px;
+    vertical-align: middle;
+  }
+  .rcp-table tr:hover td { background: #FAFAF7; }
+  tr.rcp-group-row td {
+    background: transparent;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: #888780;
+    padding: 12px 12px 4px;
+    border-bottom: none;
+    border-top: 0.5px solid rgba(0,0,0,0.08);
+  }
+  tr.rcp-group-row:first-child td { border-top: none; padding-top: 4px; }
+  tr.rcp-group-row:hover td { background: transparent; }
+  tr.rcp-total-row td {
+    border-bottom: none;
+    border-top: 0.5px solid rgba(0,0,0,0.15);
+    background: transparent;
+    padding-top: 8px;
+    font-size: 13px;
+  }
+  tr.rcp-total-row:hover td { background: transparent; }
+  tr.rcp-total-row:first-child td { border-top: 0.5px solid rgba(0,0,0,0.3); }
+  .filter-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .filter-bar select { width: auto; min-width: 180px; }
+  .breadcrumb { color: #888780; font-size: 11px; }
+
+  /* Custom dropdown for product pickers (two-line options) */
+  .cdd { position: relative; }
+  .cdd-trigger {
+    width: 100%;
+    padding: 6px 28px 6px 10px;
+    border: 0.5px solid rgba(0,0,0,0.3);
+    border-radius: 8px;
+    background: #fff;
+    font-size: 12px;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    position: relative;
+    min-height: 30px;
+    color: #1F1F1E;
+    line-height: 1.3;
+  }
+  .cdd-trigger:hover { background: #FAFAF7; }
+  .cdd-trigger::after {
+    content: '▾';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888780;
+    font-size: 10px;
+  }
+  .cdd-trigger-name { font-weight: 500; }
+  .cdd-trigger-sub { color: #888780; font-size: 11px; }
+  .cdd-trigger-placeholder { color: #888780; font-style: italic; }
+  .cdd-menu {
+    background: #fff;
+    border: 0.5px solid rgba(0,0,0,0.3);
+    border-radius: 8px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+    overflow-y: auto;
+    z-index: 1000;
+    padding: 4px;
+  }
+  .cdd-option {
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1.3;
+  }
+  .cdd-option:hover { background: #F1EFE8; }
+  .cdd-option.selected { background: #E6F1FB; }
+  .cdd-option-name { font-weight: 500; color: #1F1F1E; }
+  .cdd-option-sub { color: #888780; font-size: 11px; }
+  .cdd-option-special { font-style: italic; color: #5F5E5A; }
+  .cdd-option-special .cdd-option-name { font-style: italic; font-weight: 400; }
+  .cdd-search {
+    width: 100%;
+    padding: 6px 8px;
+    border: 0.5px solid rgba(0,0,0,0.15);
+    border-radius: 6px;
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+</style>
+
+<div class="app">
+  <div class="header">
+    <div>
+      <h1>Cookie business</h1>
+      <div class="subtitle">Recipes, inventory, receipts & costing</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-view="dashboard">Dashboard</button>
+    <button class="tab" data-view="recipes">Recipes</button>
+    <button class="tab" data-view="products">Inventory</button>
+    <button class="tab" data-view="receipts">Receipts</button>
+  </div>
+
+  <div id="dashboard-view" class="view active"></div>
+  <div id="recipes-view" class="view"></div>
+  <div id="products-view" class="view"></div>
+  <div id="receipts-view" class="view"></div>
+</div>
+
+<div id="modal-root"></div>
+
+<script>
+// ============================================================
+// State & Storage
+// ============================================================
+const STORAGE_KEY = 'cookieapp:data:v4';
+let state = {
+  products: [],
+  recipes: [],
+  receipts: [],
+  categories: []
+};
+
+// Returns true if data was loaded (current or migrated), false on a truly fresh start.
+async function loadState() {
+  try {
+    const result = await window.storage.get(STORAGE_KEY);
+    if (result && result.value) {
+      const parsed = JSON.parse(result.value);
+      state.products = parsed.products || [];
+      state.recipes = parsed.recipes || [];
+      state.receipts = parsed.receipts || [];
+      state.categories = parsed.categories || [];
+      state.products.forEach(p => {
+        if (!p.priceHistory) p.priceHistory = [];
+        if (!p.receiptAliases) p.receiptAliases = [];
+      });
+      return true;
+    }
+    // Migrate from v3: convert stock from units → packages
+    const v3 = await window.storage.get('cookieapp:data:v3');
+    if (v3 && v3.value) {
+      const parsed = JSON.parse(v3.value);
+      state.products = (parsed.products || []).map(p => {
+        const newStock = (p.packageSize && p.packageSize > 0) ? (p.stock || 0) / p.packageSize : (p.stock || 0);
+        return { ...p, stock: newStock };
+      });
+      state.recipes = parsed.recipes || [];
+      state.receipts = parsed.receipts || [];
+      state.categories = parsed.categories || [];
+      await saveState();
+      return true;
+    }
+    // Migrate from v2
+    const v2 = await window.storage.get('cookieapp:data:v2');
+    if (v2 && v2.value) {
+      const parsed = JSON.parse(v2.value);
+      state.products = (parsed.products || []).map(p => {
+        const newStock = (p.packageSize && p.packageSize > 0) ? (p.stock || 0) / p.packageSize : (p.stock || 0);
+        return { ...p, categoryId: null, stock: newStock };
+      });
+      state.recipes = parsed.recipes || [];
+      state.receipts = parsed.receipts || [];
+      state.categories = [];
+      await saveState();
+      return true;
+    }
+    // Migrate from v1
+    const v1 = await window.storage.get('cookieapp:data:v1');
+    if (v1 && v1.value) {
+      const parsed = JSON.parse(v1.value);
+      state.products = (parsed.products || []).map(p => {
+        const newStock = (p.packageSize && p.packageSize > 0) ? (p.stock || 0) / p.packageSize : (p.stock || 0);
+        return { ...p, priceHistory: p.priceHistory || [], categoryId: null, stock: newStock };
+      });
+      state.recipes = parsed.recipes || [];
+      state.receipts = [];
+      state.categories = [];
+      return true;
+    }
+  } catch (e) {}
+  return false;
+}
+
+async function saveState() {
+  try { await window.storage.set(STORAGE_KEY, JSON.stringify(state)); }
+  catch (e) { console.error('Save failed:', e); }
+}
+
+function uid() { return Math.random().toString(36).slice(2, 10); }
+function today() { return new Date().toISOString().slice(0, 10); }
+
+// ============================================================
+// Seed data
+// ============================================================
+// Structure: each entry has category name, top-level group (parent), and either
+// `products` (array of sub-products) or `singleProduct` (unit for a category that IS a product)
+const SEED_TOP_LEVELS = ['DRY INGREDIENTS', 'WET INGREDIENTS', 'MIX-INS'];
+
+const SEED_CATALOG = [
+  // ── DRY INGREDIENTS ──
+  { category: 'Sugar', topLevel: 'DRY INGREDIENTS', products: [
+    { name: 'Brown Sugar', unit: 'g' },
+    { name: "Confectioner's Sugar", unit: 'g' },
+    { name: 'Cane Sugar', unit: 'g' }
+  ]},
+  { category: 'Flour', topLevel: 'DRY INGREDIENTS', products: [
+    { name: 'All Purpose Flour', unit: 'g' },
+    { name: 'Gluten Free Flour', unit: 'g' }
+  ]},
+  { category: 'Salt', topLevel: 'DRY INGREDIENTS', categoryOnly: true },
+  { category: 'Baking Powder', topLevel: 'DRY INGREDIENTS', categoryOnly: true },
+  { category: 'Baking Soda', topLevel: 'DRY INGREDIENTS', categoryOnly: true },
+  { category: 'Corn Starch', topLevel: 'DRY INGREDIENTS', categoryOnly: true },
+  { category: 'Cocoa Powder', topLevel: 'DRY INGREDIENTS', categoryOnly: true },
+  { category: 'Coffee', topLevel: 'DRY INGREDIENTS', categoryOnly: true },
+  { category: 'Cinnamon', topLevel: 'DRY INGREDIENTS', categoryOnly: true },
+  { category: 'Cream of Tartar', topLevel: 'DRY INGREDIENTS', categoryOnly: true },
+
+  // ── WET INGREDIENTS ──
+  { category: 'Butter', topLevel: 'WET INGREDIENTS', products: [
+    { name: 'Unsalted Butter', unit: 'sticks' },
+    { name: 'Salted Butter', unit: 'sticks' },
+    { name: 'Plant Butter', unit: 'sticks' }
+  ]},
+  { category: 'Oil', topLevel: 'WET INGREDIENTS', products: [
+    { name: 'Extra Virgin Olive Oil', unit: 'tbsp' },
+    { name: 'Coconut Oil', unit: 'tbsp' }
+  ]},
+  { category: 'Food Coloring', topLevel: 'WET INGREDIENTS', products: [
+    { name: 'Red Gel Food Coloring', unit: 'tsp' }
+  ]},
+  { category: 'Eggs', topLevel: 'WET INGREDIENTS', categoryOnly: true },
+  { category: 'Water', topLevel: 'WET INGREDIENTS', categoryOnly: true },
+  { category: 'Vanilla', topLevel: 'WET INGREDIENTS', categoryOnly: true },
+  { category: 'White Vinegar', topLevel: 'WET INGREDIENTS', categoryOnly: true },
+  { category: 'Peanut Butter', topLevel: 'WET INGREDIENTS', categoryOnly: true },
+
+  // ── MIX-INS ──
+  // Products directly under MIX-INS top-level (no intermediate category)
+  { topLevel: 'MIX-INS', productsDirect: [
+    { name: 'Milk Chocolate', unit: 'g' },
+    { name: 'Semi-Sweet Chocolate Chips', unit: 'g' },
+    { name: 'Dark Chocolate Wafers', unit: 'g' },
+    { name: 'Hershey Kisses', unit: 'g' },
+    { name: 'Dark Chocolate', unit: 'g' },
+    { name: 'Vanilla Candy Coating', unit: 'g' },
+    { name: 'Peanut Butter Chips', unit: 'g' },
+    { name: "Reese's PB Cups", unit: 'g' },
+    { name: 'Cream Cheese Flavored Chips', unit: 'g' },
+    { name: 'White Chocolate', unit: 'g' },
+    { name: 'White Melting Wafers', unit: 'g' }
+  ]},
+  { category: 'Brownie Mix', topLevel: 'MIX-INS', categoryOnly: true }
+];
+
+async function seedCatalog(opts = {}) {
+  const silent = !!opts.silent;
+  if (!silent) {
+    const willOverwrite = state.products.length > 0 || state.categories.length > 0;
+    const msg = willOverwrite
+      ? `This will ADD top-level groups and seed categories. Some legacy "placeholder" products (named the same as their category, like "Salt" or "Eggs") will be REMOVED so you can add real product SKUs under each category. Recipes linked to these placeholders will lose their product link. Continue?`
+      : 'Seed the product catalog with the starter list of categories?';
+    if (!confirm(msg)) return;
+  }
+
+  let topLevelsAdded = 0, categoriesAdded = 0, productsAdded = 0, skipped = 0, cleanedUp = 0, placeholdersRemoved = 0;
+
+  // First, ensure top-level groups exist
+  const topLevelByName = {};
+  for (const tl of SEED_TOP_LEVELS) {
+    let existing = state.categories.find(c => c.name === tl && !c.parentId);
+    if (!existing) {
+      existing = { id: uid(), name: tl, parentId: null };
+      state.categories.push(existing);
+      topLevelsAdded++;
+    }
+    topLevelByName[tl] = existing;
+  }
+
+  // Cleanup: any existing redundant intermediate "Mix-Ins" category nested under MIX-INS top-level
+  const mixinsTop = topLevelByName['MIX-INS'];
+  if (mixinsTop) {
+    const redundant = state.categories.find(c =>
+      c.name.toLowerCase() === 'mix-ins' && c.parentId === mixinsTop.id
+    );
+    if (redundant) {
+      for (const c of state.categories) {
+        if (c.parentId === redundant.id) c.parentId = mixinsTop.id;
+      }
+      for (const p of state.products) {
+        if (p.categoryId === redundant.id) p.categoryId = mixinsTop.id;
+      }
+      state.categories = state.categories.filter(c => c.id !== redundant.id);
+      cleanedUp++;
+    }
+  }
+
+  // Build the set of category names that are now "category-only" (no inherent product)
+  const categoryOnlyNames = new Set(
+    SEED_CATALOG.filter(e => e.categoryOnly).map(e => e.category)
+  );
+
+  // Add (or relocate) each seed entry
+  for (const entry of SEED_CATALOG) {
+    const parent = topLevelByName[entry.topLevel];
+
+    // productsDirect: products straight under the top-level (no intermediate category)
+    if (entry.productsDirect) {
+      for (const prod of entry.productsDirect) {
+        const existing = state.products.find(p => p.name === prod.name && p.categoryId === parent.id);
+        if (existing) { skipped++; continue; }
+        state.products.push({
+          id: uid(),
+          name: prod.name,
+          store: '',
+          categoryId: parent.id,
+          packageSize: 0,
+          packageUnit: prod.unit,
+          price: 0,
+          stock: 0,
+          conversions: [],
+          priceHistory: [],
+          receiptAliases: []
+        });
+        productsAdded++;
+      }
+      continue;
+    }
+
+    // Category with sub-products OR category-only
+    let cat = state.categories.find(c => c.name === entry.category && c.id !== parent.id);
+    if (!cat) {
+      cat = { id: uid(), name: entry.category, parentId: parent.id };
+      state.categories.push(cat);
+      categoriesAdded++;
+    } else if (cat.parentId !== parent.id) {
+      cat.parentId = parent.id;
+    }
+
+    if (entry.categoryOnly) {
+      // No product creation. Remove any legacy "placeholder" product named the same
+      // as the category that sits under this category (from old seeds).
+      const placeholders = state.products.filter(p =>
+        p.name === entry.category && p.categoryId === cat.id
+      );
+      for (const ph of placeholders) {
+        // Unlink any recipe ingredients pointing at this product
+        for (const r of state.recipes) {
+          for (const ing of r.ingredients) {
+            if (ing.productId === ph.id) ing.productId = null;
+          }
+        }
+        // Remove the product itself
+        state.products = state.products.filter(p => p.id !== ph.id);
+        placeholdersRemoved++;
+      }
+      continue;
+    }
+
+    if (entry.products) {
+      for (const prod of entry.products) {
+        const existing = state.products.find(p => p.name === prod.name && p.categoryId === cat.id);
+        if (existing) { skipped++; continue; }
+        state.products.push({
+          id: uid(),
+          name: prod.name,
+          store: '',
+          categoryId: cat.id,
+          packageSize: 0,
+          packageUnit: prod.unit,
+          price: 0,
+          stock: 0,
+          conversions: [],
+          priceHistory: [],
+          receiptAliases: []
+        });
+        productsAdded++;
+      }
+    }
+  }
+
+  await saveState();
+  renderCurrent();
+  if (!silent) {
+    setTimeout(() => alert(
+      `Seeded ${topLevelsAdded} top-level group${topLevelsAdded === 1 ? '' : 's'}, ` +
+      `${categoriesAdded} categor${categoriesAdded === 1 ? 'y' : 'ies'}, and ` +
+      `${productsAdded} product${productsAdded === 1 ? '' : 's'}.` +
+      `${skipped > 0 ? ` ${skipped} already existed and were skipped.` : ''}` +
+      `${cleanedUp > 0 ? ` Cleaned up ${cleanedUp} redundant intermediate categor${cleanedUp === 1 ? 'y' : 'ies'}.` : ''}` +
+      `${placeholdersRemoved > 0 ? ` Removed ${placeholdersRemoved} legacy placeholder product${placeholdersRemoved === 1 ? '' : 's'} (Salt, Eggs, etc.) — add real product SKUs under each category.` : ''}`
+    ), 100);
+  }
+}
+
+// ============================================================
+// Seed recipes
+// ============================================================
+// Each ingredient: { name, quantity, unit, productName?, categoryName? }
+// - productName: link to a specific product by name (preferred)
+// - categoryName: filter to this category when picking the product
+// - If only categoryName is set (no productName), the recipe will look for a product
+//   matching the category name (e.g., "Eggs" category has an "Eggs" product)
+const SEED_RECIPES = [
+  {
+    name: 'Chunky Chocolate Chip',
+    batches: 1,
+    cookiesPerBatch: 12.5,
+    ingredients: [
+      // ── WET ──
+      { name: 'Unsalted Butter', quantity: 2, unit: 'sticks', productName: 'Unsalted Butter', categoryName: 'Butter' },
+      { name: 'Eggs', quantity: 1, unit: 'each', categoryName: 'Eggs' },
+      { name: 'Water', quantity: 2, unit: 'tbsp', categoryName: 'Water' },
+      { name: 'Vanilla', quantity: 2, unit: 'tsp', categoryName: 'Vanilla' },
+      // ── DRY ──
+      { name: 'Brown Sugar', quantity: 220, unit: 'g', productName: 'Brown Sugar', categoryName: 'Sugar' },
+      { name: "Confectioner's Sugar", quantity: 85, unit: 'g', productName: "Confectioner's Sugar", categoryName: 'Sugar' },
+      { name: 'All Purpose Flour', quantity: 320, unit: 'g', productName: 'All Purpose Flour', categoryName: 'Flour' },
+      { name: 'Salt', quantity: 1.5, unit: 'tsp', categoryName: 'Salt' },
+      { name: 'Baking Powder', quantity: 2, unit: 'tsp', categoryName: 'Baking Powder' },
+      { name: 'Baking Soda', quantity: 2, unit: 'tsp', categoryName: 'Baking Soda' },
+      { name: 'Corn Starch', quantity: 2, unit: 'tsp', categoryName: 'Corn Starch' },
+      // ── MIX-INS ──
+      { name: 'Milk Chocolate', quantity: 100, unit: 'g', productName: 'Milk Chocolate' },
+      { name: 'Semi-Sweet Chocolate Chips', quantity: 100, unit: 'g', productName: 'Semi-Sweet Chocolate Chips' },
+      { name: 'Dark Chocolate Wafers', quantity: 87, unit: 'g', productName: 'Dark Chocolate Wafers' }
+    ]
+  },
+  {
+    name: 'Double Brownie Blast',
+    batches: 1,
+    cookiesPerBatch: 10,
+    ingredients: [
+      // ── WET ──
+      { name: 'Unsalted Butter', quantity: 1, unit: 'sticks', productName: 'Unsalted Butter', categoryName: 'Butter' },
+      { name: 'Eggs', quantity: 1, unit: 'each', categoryName: 'Eggs' },
+      { name: 'Water', quantity: 1, unit: 'tbsp', categoryName: 'Water' },
+      { name: 'Vanilla', quantity: 2, unit: 'tsp', categoryName: 'Vanilla' },
+      { name: 'Brownie Mix Eggs', quantity: 1, unit: 'each', categoryName: 'Eggs' },
+      { name: 'Brownie Mix Water', quantity: 0.333, unit: 'cup', categoryName: 'Water' },
+      { name: 'Brownie Mix EVOO', quantity: 0.333, unit: 'cup', productName: 'Extra Virgin Olive Oil', categoryName: 'Oil' },
+      // ── DRY ──
+      { name: 'Brown Sugar', quantity: 110, unit: 'g', productName: 'Brown Sugar', categoryName: 'Sugar' },
+      { name: 'Cane Sugar', quantity: 65, unit: 'g', productName: 'Cane Sugar', categoryName: 'Sugar' },
+      { name: 'All Purpose Flour', quantity: 120, unit: 'g', productName: 'All Purpose Flour', categoryName: 'Flour' },
+      { name: 'Cocoa Powder', quantity: 33, unit: 'g', categoryName: 'Cocoa Powder' },
+      { name: 'Coffee', quantity: 1, unit: 'tsp', categoryName: 'Coffee' },
+      { name: 'Salt', quantity: 1, unit: 'tsp', categoryName: 'Salt' },
+      { name: 'Baking Powder', quantity: 1, unit: 'tsp', categoryName: 'Baking Powder' },
+      { name: 'Baking Soda', quantity: 1, unit: 'tsp', categoryName: 'Baking Soda' },
+      { name: 'Corn Starch', quantity: 1, unit: 'tsp', categoryName: 'Corn Starch' },
+      // ── MIX-INS ──
+      { name: 'Semi-Sweet Chocolate Chips', quantity: 100, unit: 'g', productName: 'Semi-Sweet Chocolate Chips' },
+      { name: 'Hershey Kisses', quantity: 100, unit: 'g', productName: 'Hershey Kisses' },
+      { name: 'Brownie Mix', quantity: 1, unit: 'bag', categoryName: 'Brownie Mix' }
+    ]
+  }
+];
+
+async function seedRecipes(opts = {}) {
+  const silent = !!opts.silent;
+  if (!silent && state.recipes.length > 0) {
+    const ok = confirm(`You already have ${state.recipes.length} recipe${state.recipes.length === 1 ? '' : 's'}. This will ADD ${SEED_RECIPES.length} sample recipe${SEED_RECIPES.length === 1 ? '' : 's'}. Existing recipes with the same name will be skipped. Continue?`);
+    if (!ok) return;
+  }
+
+  let recipesAdded = 0, skipped = 0;
+
+  for (const seed of SEED_RECIPES) {
+    if (state.recipes.find(r => r.name === seed.name)) { skipped++; continue; }
+
+    const ingredients = seed.ingredients.map(si => {
+      // Recipes always start with no product linked — user picks each from scratch.
+      // The categoryName, if provided, is preserved as a filter to narrow the dropdown.
+      let filterCategoryId = null;
+      if (si.categoryName) {
+        const cat = state.categories.find(c => c.name === si.categoryName);
+        if (cat) filterCategoryId = cat.id;
+      }
+      return {
+        id: uid(),
+        name: si.name,
+        quantity: si.quantity,
+        unit: si.unit,
+        productId: null,
+        useAnyMatching: false,
+        filterCategoryId
+      };
+    });
+
+    state.recipes.push({
+      id: uid(),
+      name: seed.name,
+      batches: seed.batches,
+      cookiesPerBatch: seed.cookiesPerBatch,
+      ingredients
+    });
+    recipesAdded++;
+  }
+
+  await saveState();
+  renderCurrent();
+  if (!silent) {
+    setTimeout(() => {
+      let msg = `Added ${recipesAdded} recipe${recipesAdded === 1 ? '' : 's'}.`;
+      if (skipped) msg += ` ${skipped} already existed and were skipped.`;
+      alert(msg);
+    }, 100);
+  }
+}
+
+// ============================================================
+// Category helpers
+// ============================================================
+function getCategory(id) { return state.categories.find(c => c.id === id) || null; }
+function getCategoryChildren(parentId) { return state.categories.filter(c => c.parentId === parentId); }
+function getCategoryPath(id) {
+  const path = [];
+  let cur = getCategory(id);
+  let safety = 0;
+  while (cur && safety++ < 20) {
+    path.unshift(cur);
+    cur = cur.parentId ? getCategory(cur.parentId) : null;
+  }
+  return path;
+}
+function getCategoryPathName(id, sep = ' › ') {
+  return getCategoryPath(id).map(c => c.name).join(sep);
+}
+// Returns ALL descendant category ids (including the id itself)
+function getCategoryAndDescendants(id) {
+  const result = new Set([id]);
+  const stack = [id];
+  while (stack.length) {
+    const cur = stack.pop();
+    for (const c of getCategoryChildren(cur)) {
+      if (!result.has(c.id)) { result.add(c.id); stack.push(c.id); }
+    }
+  }
+  return result;
+}
+// Products in a category (including descendants)
+function getProductsInCategoryTree(categoryId) {
+  if (!categoryId) return state.products.filter(p => !p.categoryId);
+  const ids = getCategoryAndDescendants(categoryId);
+  return state.products.filter(p => p.categoryId && ids.has(p.categoryId));
+}
+function countProductsInCategoryTree(categoryId) {
+  return getProductsInCategoryTree(categoryId).length;
+}
+
+// ============================================================
+// Unit conversion
+// ============================================================
+const WEIGHT_TO_G = { g: 1, kg: 1000, oz: 28.3495, lb: 453.592 };
+const VOLUME_TO_ML = { ml: 1, l: 1000, tsp: 4.92892, tbsp: 14.7868, cup: 236.588, 'fl oz': 29.5735 };
+const ALL_UNITS = ['g', 'kg', 'oz', 'lb', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'cups', 'fl oz', 'each', 'sticks', 'box', 'bar', 'bag', 'squares'];
+const COUNT_UNITS = new Set(['each', 'sticks', 'box', 'bar', 'bag', 'squares', 'cups']);
+
+// Built-in product-aware unit conversions that don't require per-product setup.
+// Each entry: predicate on product name, plus a conversion to apply.
+// Keep this list short and confident; for anything less certain, user can add per-product conversions.
+const WELL_KNOWN_CONVERSIONS = [
+  // 1 stick of butter = 113.4 g  (US standard: 1/4 lb)
+  { match: (name) => /\bbutter\b/i.test(name || ''),
+    fromUnit: 'sticks', toUnit: 'g', toQty: 113.4 }
+];
+
+function unitDimension(u) {
+  if (WEIGHT_TO_G[u]) return 'weight';
+  if (VOLUME_TO_ML[u]) return 'volume';
+  if (COUNT_UNITS.has(u)) return 'count:' + u; // each count unit is its own dimension (no auto-conversion)
+  return null;
+}
+
+function convertQuantity(qty, fromUnit, toUnit, product) {
+  if (fromUnit === toUnit) return qty;
+  const fromDim = unitDimension(fromUnit);
+  const toDim = unitDimension(toUnit);
+  if (fromDim === toDim && fromDim === 'weight') return qty * WEIGHT_TO_G[fromUnit] / WEIGHT_TO_G[toUnit];
+  if (fromDim === toDim && fromDim === 'volume') return qty * VOLUME_TO_ML[fromUnit] / VOLUME_TO_ML[toUnit];
+  if (fromDim === toDim && fromDim && fromDim.startsWith('count:')) return qty;
+
+  // Per-product conversions (user-defined)
+  if (product && product.conversions) {
+    for (const c of product.conversions) {
+      if (c.fromUnit === fromUnit && c.toUnit === toUnit) return qty * c.toQty / c.fromQty;
+      if (c.fromUnit === toUnit && c.toUnit === fromUnit) return qty * c.fromQty / c.toQty;
+      const toFromDim = unitDimension(c.fromUnit);
+      if (toFromDim === fromDim) {
+        const intermediate = convertQuantity(qty, fromUnit, c.fromUnit, null);
+        if (intermediate !== null) {
+          const converted = intermediate * c.toQty / c.fromQty;
+          const final = convertQuantity(converted, c.toUnit, toUnit, null);
+          if (final !== null) return final;
+        }
+      }
+      if (toFromDim === toDim) {
+        const flipped = qty * c.fromQty / c.toQty;
+        const intermediate = convertQuantity(flipped, c.fromUnit, toUnit, null);
+        if (intermediate !== null) return intermediate;
+      }
+    }
+  }
+
+  // Built-in well-known food conversions (e.g., 1 stick butter = 113.4 g)
+  if (product && product.name) {
+    for (const wk of WELL_KNOWN_CONVERSIONS) {
+      if (!wk.match(product.name)) continue;
+      // Direct hit
+      if (wk.fromUnit === fromUnit && wk.toUnit === toUnit) return qty * wk.toQty;
+      if (wk.fromUnit === toUnit && wk.toUnit === fromUnit) return qty / wk.toQty;
+      // Bridge through wk.toUnit's dimension (e.g., sticks->g, then g->lb)
+      if (wk.fromUnit === fromUnit) {
+        const inWkTo = qty * wk.toQty;
+        const final = convertQuantity(inWkTo, wk.toUnit, toUnit, null);
+        if (final !== null) return final;
+      }
+      if (wk.fromUnit === toUnit) {
+        // We want to go from `fromUnit` to wk.fromUnit (e.g., lb to sticks).
+        // First convert qty in fromUnit -> wk.toUnit (g), then divide by wk.toQty to get sticks.
+        const inWkTo = convertQuantity(qty, fromUnit, wk.toUnit, null);
+        if (inWkTo !== null) return inWkTo / wk.toQty;
+      }
+    }
+  }
+
+  return null;
+}
+
+// ============================================================
+// Cost & availability
+// ============================================================
+function findMatchingProduct(ingredient) {
+  if (ingredient.productId && !ingredient.useAnyMatching) {
+    return state.products.find(p => p.id === ingredient.productId) || null;
+  }
+  if (ingredient.useAnyMatching) {
+    const ingName = ingredient.name.toLowerCase().trim();
+    const candidates = state.products.filter(p => {
+      const pn = p.name.toLowerCase();
+      return pn.includes(ingName) || ingName.includes(pn);
+    });
+    if (candidates.length === 0) return null;
+    let best = null, bestCost = Infinity;
+    for (const p of candidates) {
+      const cost = costForIngredient(ingredient, p);
+      if (cost !== null && cost < bestCost) { bestCost = cost; best = p; }
+    }
+    return best || candidates[0];
+  }
+  return null;
+}
+
+function costForIngredient(ingredient, product) {
+  if (!product) return null;
+  const qtyInPackageUnit = convertQuantity(ingredient.quantity, ingredient.unit, product.packageUnit, product);
+  if (qtyInPackageUnit === null) return null;
+  const pricePerPackageUnit = product.price / product.packageSize;
+  return qtyInPackageUnit * pricePerPackageUnit;
+}
+
+function recipeCost(recipe) {
+  let total = 0, missing = [];
+  const breakdown = [];
+  for (const ing of recipe.ingredients) {
+    if (!ing.name || !ing.quantity) continue;
+    const product = findMatchingProduct(ing);
+    const cost = costForIngredient(ing, product);
+    if (cost === null) { missing.push(ing.name); breakdown.push({ ingredient: ing, product, cost: null }); }
+    else { total += cost; breakdown.push({ ingredient: ing, product, cost }); }
+  }
+  return { total, missing, breakdown };
+}
+
+function maxBatches(recipe) {
+  if (!recipe.ingredients.length) return { batches: 0, limitingIngredient: null };
+  let minBatches = Infinity, limiting = null;
+  for (const ing of recipe.ingredients) {
+    if (!ing.name || !ing.quantity) continue;
+    const product = findMatchingProduct(ing);
+    if (!product) return { batches: 0, limitingIngredient: ing.name };
+    const needInPackageUnit = convertQuantity(ing.quantity, ing.unit, product.packageUnit, product);
+    if (needInPackageUnit === null) return { batches: 0, limitingIngredient: ing.name };
+    if (needInPackageUnit <= 0) continue;
+    // Stock is in packages; convert to units available before computing batches possible.
+    const unitsAvailable = (product.stock || 0) * (product.packageSize || 0);
+    const possible = unitsAvailable / needInPackageUnit;
+    if (possible < minBatches) { minBatches = possible; limiting = ing.name; }
+  }
+  return { batches: minBatches === Infinity ? 0 : Math.floor(minBatches), limitingIngredient: limiting };
+}
+
+function fmt$(n) { if (n === null || n === undefined || isNaN(n)) return '—'; return '$' + n.toFixed(2); }
+function fmt$4(n) { if (n === null || n === undefined || isNaN(n)) return '—'; return '$' + n.toFixed(4); }
+
+// Format the SKU detail string (e.g., "Costco · 5 lb")
+function productSkuDetail(p) {
+  const parts = [];
+  if (p.store) parts.push(p.store);
+  if (p.packageSize > 0) parts.push(`${p.packageSize} ${p.packageUnit}`);
+  return parts.join(' · ');
+}
+
+// ============================================================
+// Custom dropdown for product pickers (two-line options)
+// ============================================================
+// Renders a custom-styled dropdown with two-line options (name + SKU detail).
+// options: [{ value, name, sub, special }]
+// selectedValue: current value
+// onChange: function(newValue) called when an option is picked
+// elementId: unique DOM id prefix
+const _cddRegistry = {};
+let _cddOpenId = null;
+
+function customProductDropdown(elementId, options, selectedValue, onChangeFnName, opts = {}) {
+  _cddRegistry[elementId] = { options, selectedValue, onChangeFnName, opts };
+  const selected = options.find(o => o.value === selectedValue);
+  const placeholder = opts.placeholder || '— pick —';
+  let triggerInner;
+  if (selected) {
+    triggerInner = selected.special
+      ? `<div class="cdd-option-special"><span class="cdd-trigger-name">${escapeHtml(selected.name)}</span></div>`
+      : `<div class="cdd-trigger-name">${escapeHtml(selected.name)}</div>${selected.sub ? `<div class="cdd-trigger-sub">${escapeHtml(selected.sub)}</div>` : ''}`;
+  } else {
+    triggerInner = `<div class="cdd-trigger-placeholder">${escapeHtml(placeholder)}</div>`;
+  }
+  return `
+    <div class="cdd" id="${elementId}">
+      <button type="button" class="cdd-trigger" onclick="cddToggle('${elementId}', event)">${triggerInner}</button>
+    </div>
+  `;
+}
+
+function cddToggle(elementId, event) {
+  event.stopPropagation();
+  if (_cddOpenId === elementId) {
+    cddClose();
+    return;
+  }
+  cddClose();
+  cddOpen(elementId);
+}
+
+function cddOpen(elementId) {
+  const reg = _cddRegistry[elementId];
+  if (!reg) return;
+  const root = document.getElementById(elementId);
+  if (!root) return;
+  _cddOpenId = elementId;
+  const trigger = root.querySelector('.cdd-trigger');
+  const rect = trigger.getBoundingClientRect();
+  // Render menu into document body (escape modal clipping)
+  const menu = document.createElement('div');
+  menu.className = 'cdd-menu';
+  menu.id = '__cdd_menu_open';
+  // Decide whether to open up or down based on available space
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const spaceAbove = rect.top;
+  const maxMenuHeight = 320;
+  const openUp = spaceBelow < 200 && spaceAbove > spaceBelow;
+  menu.style.position = 'fixed';
+  menu.style.left = rect.left + 'px';
+  menu.style.width = rect.width + 'px';
+  if (openUp) {
+    menu.style.bottom = (window.innerHeight - rect.top + 2) + 'px';
+    menu.style.maxHeight = Math.min(maxMenuHeight, spaceAbove - 8) + 'px';
+  } else {
+    menu.style.top = (rect.bottom + 2) + 'px';
+    menu.style.maxHeight = Math.min(maxMenuHeight, spaceBelow - 8) + 'px';
+  }
+  const showSearch = reg.options.length > 8;
+  menu.innerHTML = `
+    ${showSearch ? `<input class="cdd-search" placeholder="Search..." oninput="cddFilter('${elementId}', this.value)" onclick="event.stopPropagation()" />` : ''}
+    <div class="cdd-options-list"></div>
+  `;
+  // Delegate option clicks via data-cdd-idx; also stop propagation so clicks inside the menu
+  // don't trigger the document-level close handler.
+  menu.addEventListener('click', e => {
+    e.stopPropagation();
+    const optEl = e.target.closest('[data-cdd-idx]');
+    if (!optEl) return;
+    const idx = parseInt(optEl.getAttribute('data-cdd-idx'), 10);
+    if (isNaN(idx)) return;
+    const option = reg.options[idx];
+    if (!option) return;
+    cddSelect(elementId, option.value);
+  });
+  document.body.appendChild(menu);
+  renderCddOptions(elementId, '');
+  if (showSearch) setTimeout(() => menu.querySelector('.cdd-search')?.focus(), 10);
+}
+
+function renderCddOptions(elementId, filter) {
+  const reg = _cddRegistry[elementId];
+  if (!reg) return;
+  const menu = document.getElementById('__cdd_menu_open');
+  const list = menu?.querySelector('.cdd-options-list');
+  if (!list) return;
+  const f = (filter || '').toLowerCase().trim();
+  // Filter while preserving the index into the original options array,
+  // so we can use a numeric data-attribute (clean, no quoting issues).
+  const filtered = reg.options
+    .map((o, idx) => ({ o, idx }))
+    .filter(({ o }) => !f || o.name.toLowerCase().includes(f) || (o.sub || '').toLowerCase().includes(f));
+  if (filtered.length === 0) {
+    list.innerHTML = '<div style="padding: 8px; font-size: 12px; color: #888780;">No matches</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(({ o, idx }) => {
+    const isSelected = o.value === reg.selectedValue;
+    if (o.special) {
+      return `<div class="cdd-option cdd-option-special ${isSelected ? 'selected' : ''}" data-cdd-idx="${idx}">
+        <div class="cdd-option-name">${escapeHtml(o.name)}</div>
+      </div>`;
+    }
+    return `<div class="cdd-option ${isSelected ? 'selected' : ''}" data-cdd-idx="${idx}">
+      <div class="cdd-option-name">${escapeHtml(o.name)}</div>
+      ${o.sub ? `<div class="cdd-option-sub">${escapeHtml(o.sub)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function cddFilter(elementId, value) {
+  renderCddOptions(elementId, value);
+}
+
+function cddSelect(elementId, value) {
+  const reg = _cddRegistry[elementId];
+  if (!reg) return;
+  cddClose();
+  window[reg.onChangeFnName](value);
+}
+
+function cddClose() {
+  if (!_cddOpenId) return;
+  const menu = document.getElementById('__cdd_menu_open');
+  if (menu) menu.remove();
+  _cddOpenId = null;
+}
+
+// Close on outside click
+document.addEventListener('click', () => cddClose());
+
+// ============================================================
+// Receipt parsing & fuzzy matching
+// ============================================================
+function parseReceiptText(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  let store = '', date = today(), total = null;
+  const items = [];
+  if (lines.length > 0 && lines[0].length < 40 && !/\$|\d{2,}\./.test(lines[0])) store = lines[0];
+  for (const line of lines) {
+    const dateMatch = line.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+    if (dateMatch) {
+      const [_, mo, d, y] = dateMatch;
+      const year = y.length === 2 ? '20' + y : y;
+      date = `${year}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`;
+    }
+    const totalMatch = line.match(/^(?:TOTAL|GRAND TOTAL|TOTAL DUE)[:\s]+\$?(\d+\.\d{2})/i);
+    if (totalMatch) total = parseFloat(totalMatch[1]);
+    if (/^(SUBTOTAL|TAX|TOTAL|CASH|CHANGE|VISA|MASTER|DEBIT|TENDER|BALANCE|CARD|AMOUNT|PAYMENT)/i.test(line)) continue;
+    const priceMatch = line.match(/\$?(\d+\.\d{2})\s*[A-Z]?\s*$/);
+    if (!priceMatch) continue;
+    const price = parseFloat(priceMatch[1]);
+    if (price <= 0 || price > 1000) continue;
+    let rest = line.slice(0, priceMatch.index).trim();
+    rest = rest.replace(/^\d+\s*@\s*\$?\d+\.\d{2}\s*/i, '');
+    rest = rest.replace(/\s+[A-Z]{1,2}$/, '').trim();
+    if (rest.length < 2) continue;
+    let qty = 1;
+    const qtyMatch = rest.match(/^(\d+)\s+(.+)$/);
+    if (qtyMatch && parseInt(qtyMatch[1]) <= 20) { qty = parseInt(qtyMatch[1]); rest = qtyMatch[2]; }
+    items.push({ rawName: rest, qty, price });
+  }
+  return { store, date, total, items };
+}
+
+// Try to extract package size + unit from a receipt item's raw name.
+// Returns { packageSize, packageUnit, cleanName } where cleanName has the package spec stripped.
+// Examples: "KS UNSALTED BUTTER 4LB" -> {packageSize:4, packageUnit:'lb', cleanName:'KS UNSALTED BUTTER'}
+//           "GHIRARDELLI MILK CHOC 11.5OZ" -> {packageSize:11.5, packageUnit:'oz'}
+//           "KS LARGE EGGS 24CT" -> {packageSize:24, packageUnit:'each'}
+function extractPackageInfo(rawName) {
+  if (!rawName) return { packageSize: 0, packageUnit: 'g', cleanName: rawName };
+  // Match a number (int or decimal) immediately followed (no space or one space) by a unit token at the END of the string.
+  // Also handle "FL OZ" / "FLOZ" specifically.
+  const lower = rawName.toLowerCase();
+
+  // Heuristic for ambiguous "oz": fluid for liquid-ish things, weight otherwise.
+  // We avoid false positives like "milk chocolate" by checking for the obvious-solid signals first.
+  const looksLikeChocolate = /\b(chocolate|choc|chips|wafers|cocoa|candy|sugar|flour|powder|nuts?|cereal|seeds?|salt|rice|pasta)\b/.test(lower);
+  const isLiquidLike = !looksLikeChocolate && /\b(vanilla|extract|olive\s*oil|coconut\s*oil|canola\s*oil|vegetable\s*oil|syrup|honey|juice|sauce|milk\b)\b/.test(lower);
+
+  // Patterns to try, in order of specificity
+  const patterns = [
+    { re: /\b(\d+(?:\.\d+)?)\s*fl\s*oz\b/i, unit: 'fl oz' },
+    { re: /\b(\d+(?:\.\d+)?)\s*floz\b/i, unit: 'fl oz' },
+    { re: /\b(\d+(?:\.\d+)?)\s*lbs?\b/i, unit: 'lb' },
+    { re: /\b(\d+(?:\.\d+)?)\s*kg\b/i, unit: 'kg' },
+    { re: /\b(\d+(?:\.\d+)?)\s*oz\b/i, unit: () => isLiquidLike ? 'fl oz' : 'oz' },
+    { re: /\b(\d+(?:\.\d+)?)\s*(?:g|gm|gr|grams?)\b/i, unit: 'g' },
+    { re: /\b(\d+(?:\.\d+)?)\s*ml\b/i, unit: 'ml' },
+    { re: /\b(\d+(?:\.\d+)?)\s*l\b/i, unit: 'l' },
+    { re: /\b(\d+(?:\.\d+)?)\s*(?:ct|count|pk|pack|pcs?|piece)\b/i, unit: 'each' },
+    { re: /\b(\d+(?:\.\d+)?)\s*dozen\b/i, unit: 'each', mult: 12 },
+    { re: /\b(\d+(?:\.\d+)?)\s*doz\b/i, unit: 'each', mult: 12 }
+  ];
+  for (const p of patterns) {
+    const m = rawName.match(p.re);
+    if (m) {
+      let size = parseFloat(m[1]);
+      if (p.mult) size *= p.mult;
+      const unit = typeof p.unit === 'function' ? p.unit() : p.unit;
+      const cleanName = rawName.replace(p.re, '').replace(/\s+/g, ' ').trim();
+      return { packageSize: size, packageUnit: unit, cleanName };
+    }
+  }
+  return { packageSize: 0, packageUnit: 'g', cleanName: rawName };
+}
+
+function similarity(a, b) {
+  a = a.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+  b = b.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  const tokensA = new Set(a.split(' ').filter(t => t.length > 1));
+  const tokensB = new Set(b.split(' ').filter(t => t.length > 1));
+  if (tokensA.size === 0 || tokensB.size === 0) return 0;
+  let common = 0;
+  for (const t of tokensA) {
+    if (tokensB.has(t)) common += 1;
+    else {
+      for (const t2 of tokensB) {
+        if (t.length >= 3 && t2.includes(t)) { common += 0.5; break; }
+        if (t2.length >= 3 && t.includes(t2)) { common += 0.5; break; }
+      }
+    }
+  }
+  return common / Math.max(tokensA.size, tokensB.size);
+}
+
+// Normalize an alias for storage & comparison: uppercase, single-space, trimmed.
+function normalizeAlias(s) {
+  return (s || '').toUpperCase().replace(/\s+/g, ' ').trim();
+}
+
+function bestProductMatch(rawName, receiptStore) {
+  // 1. Exact alias hit wins immediately (score 1.0). Aliases are learned from prior receipts.
+  const normalizedRaw = normalizeAlias(rawName);
+  if (normalizedRaw) {
+    for (const p of state.products) {
+      if (!p.receiptAliases || p.receiptAliases.length === 0) continue;
+      if (p.receiptAliases.includes(normalizedRaw)) {
+        return { product: p, score: 1, viaAlias: true };
+      }
+    }
+  }
+  // 2. Fuzzy match: name similarity (0..1) + small bonus if store matches receipt
+  const candidates = state.products.map(p => {
+    const nameScore = similarity(rawName, p.name);
+    let storeBonus = 0;
+    if (receiptStore && p.store) {
+      const a = receiptStore.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const b = p.store.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (a && b && (a.includes(b) || b.includes(a))) {
+        storeBonus = 0.15; // boost matching-store products
+      }
+    }
+    return { product: p, nameScore, score: Math.min(1, nameScore + storeBonus) };
+  });
+  candidates.sort((a, b) => b.score - a.score);
+  const top = candidates[0];
+  // Only return the top candidate if name actually matched at all
+  if (!top || top.nameScore === 0) return { product: null, score: 0 };
+  return { product: top.product, score: top.score };
+}
+
+function classifyMatch(score) {
+  if (score >= 0.7) return 'high';
+  if (score >= 0.35) return 'low';
+  return 'none';
+}
+
+// ============================================================
+// Routing
+// ============================================================
+let currentView = 'dashboard';
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    tab.classList.add('active');
+    currentView = tab.dataset.view;
+    document.getElementById(currentView + '-view').classList.add('active');
+    renderCurrent();
+  });
+});
+
+function renderCurrent() {
+  if (currentView === 'dashboard') renderDashboard();
+  else if (currentView === 'recipes') renderRecipes();
+  else if (currentView === 'products') renderProducts();
+  else if (currentView === 'receipts') renderReceipts();
+}
+
+function switchTo(view) { document.querySelector(`.tab[data-view="${view}"]`).click(); }
+
+// ============================================================
+// Dashboard
+// ============================================================
+function renderDashboard() {
+  const root = document.getElementById('dashboard-view');
+  const numProducts = state.products.length;
+  const numRecipes = state.recipes.length;
+  const totalInventoryValue = state.products.reduce((sum, p) => sum + (p.stock || 0) * (p.price || 0), 0);
+  const lowStock = state.products.filter(p => p.stock <= 0).length;
+
+  const recipeRows = state.recipes.map(r => {
+    const { total, missing } = recipeCost(r);
+    const cookies = (r.batches || 1) * (r.cookiesPerBatch || 1);
+    const batches = maxBatches(r);
+    return { r, total, missing, costPerBatch: total / (r.batches || 1), costPerCookie: total / cookies, cookies, batches: batches.batches, limiting: batches.limitingIngredient };
+  });
+
+  root.innerHTML = `
+    <div class="grid grid-4" style="margin-bottom: 16px;">
+      <div class="metric-card"><div class="metric-label">Recipes</div><div class="metric-value">${numRecipes}</div></div>
+      <div class="metric-card"><div class="metric-label">Products</div><div class="metric-value">${numProducts}</div></div>
+      <div class="metric-card"><div class="metric-label">Inventory value</div><div class="metric-value">${fmt$(totalInventoryValue)}</div></div>
+      <div class="metric-card"><div class="metric-label">Out of stock</div><div class="metric-value">${lowStock}</div><div class="metric-sub">${lowStock === 0 ? 'all good' : 'products at zero'}</div></div>
+    </div>
+    <div class="card">
+      <div class="row-between" style="margin-bottom: 12px;">
+        <div style="font-weight: 500;">What can I bake right now?</div>
+        <div class="small">Cost per cookie + max batches from current inventory</div>
+      </div>
+      ${recipeRows.length === 0 ? `
+        <div class="empty">No recipes yet. <button class="btn btn-sm" onclick="switchTo('recipes')">Add one →</button></div>
+      ` : `
+        <table>
+          <thead><tr><th>Recipe</th><th>Yield</th><th style="text-align:right;">Cost/batch</th><th style="text-align:right;">Cost/cookie</th><th style="text-align:right;">Batches possible</th><th>Limit</th></tr></thead>
+          <tbody>
+            ${recipeRows.map(({r, total, missing, costPerBatch, costPerCookie, cookies, batches, limiting}) => `
+              <tr>
+                <td style="font-weight: 500;">${escapeHtml(r.name)}</td>
+                <td class="small">${r.batches} × ${r.cookiesPerBatch} = ${cookies}</td>
+                <td style="text-align:right;">${missing.length ? '<span class="badge badge-out">missing</span>' : fmt$(costPerBatch)}</td>
+                <td style="text-align:right;">${missing.length ? '—' : fmt$4(costPerCookie)}</td>
+                <td style="text-align:right; font-weight: 500;">${missing.length ? '—' : batches}</td>
+                <td class="small">${missing.length ? `Missing: ${escapeHtml(missing.join(', '))}` : (limiting ? escapeHtml(limiting) : '—')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `}
+    </div>
+  `;
+}
+
+// ============================================================
+// Categories: managed via modal (no longer a tab)
+// ============================================================
+let categoriesModalOpen = false;
+
+function openCategoriesModal() {
+  categoriesModalOpen = true;
+  renderCategoriesModal();
+}
+
+function closeCategoriesModal() {
+  categoriesModalOpen = false;
+  closeModal();
+  renderCurrent();
+}
+
+function renderCategoriesModal() {
+  const roots = getCategoryChildren(null);
+  document.getElementById('modal-root').innerHTML = `
+    <div class="modal-backdrop" onclick="if(event.target===this)closeCategoriesModal()">
+      <div class="modal" style="max-width: 600px;">
+        <div class="row-between" style="margin-bottom: 16px;">
+          <h2 style="margin: 0;">Manage categories</h2>
+          <button class="btn btn-sm btn-primary" onclick="openCategoryModal(null, null)">+ Add top-level</button>
+        </div>
+        ${state.categories.length === 0 ? `
+          <div class="empty">
+            <div style="margin-bottom: 8px;">No categories yet.</div>
+            <div class="small">Group products like "Dairy → Butter → Unsalted" so recipes can pick from the right options faster.</div>
+          </div>
+        ` : `
+          <div class="cat-tree">
+            ${roots.map(c => renderCategoryNode(c, 0)).join('')}
+          </div>
+        `}
+        <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+          <button class="btn" onclick="closeCategoriesModal()">Done</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderCategoryNode(cat, depth) {
+  const children = getCategoryChildren(cat.id);
+  const directProducts = state.products.filter(p => p.categoryId === cat.id).length;
+  const totalProducts = countProductsInCategoryTree(cat.id);
+  return `
+    <div>
+      <div class="cat-node">
+        <div class="cat-node-name">
+          <span style="font-weight: 500;">${escapeHtml(cat.name)}</span>
+          <span class="cat-count">${directProducts} direct · ${totalProducts} total</span>
+        </div>
+        <div class="cat-actions">
+          <button class="btn btn-sm" onclick="openCategoryModal(null, '${cat.id}')">+ subcategory</button>
+          <button class="btn btn-sm" onclick="openCategoryModal('${cat.id}')">edit</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteCategory('${cat.id}')">×</button>
+        </div>
+      </div>
+      ${children.length ? `<div class="cat-children">${children.map(c => renderCategoryNode(c, depth + 1)).join('')}</div>` : ''}
+    </div>
+  `;
+}
+
+let categoryEditState = null;
+
+function openCategoryModal(categoryId, parentId) {
+  const cat = categoryId ? getCategory(categoryId) : null;
+  categoryEditState = {
+    id: cat?.id || uid(),
+    name: cat?.name || '',
+    parentId: cat ? cat.parentId : (parentId || null),
+    isNew: !cat
+  };
+  renderCategoryModal();
+}
+
+function renderCategoryModal() {
+  const c = categoryEditState;
+  if (!c) return;
+  // Build list of possible parents (cannot be self or descendant)
+  let excludedIds = new Set();
+  if (!c.isNew) excludedIds = getCategoryAndDescendants(c.id);
+  const parentOptions = state.categories.filter(x => !excludedIds.has(x.id));
+
+  document.getElementById('modal-root').innerHTML = `
+    <div class="modal-backdrop" onclick="if(event.target===this)cancelCategoryEdit()">
+      <div class="modal" style="max-width: 500px;">
+        <h2>${c.isNew ? 'New' : 'Edit'} category</h2>
+        <div class="field">
+          <label>Name</label>
+          <input type="text" id="cat-name" value="${escapeHtml(c.name)}" placeholder="e.g., Butter" autofocus />
+        </div>
+        <div class="field">
+          <label>Parent category</label>
+          <select id="cat-parent">
+            <option value="">— top level —</option>
+            ${parentOptions.map(p => `<option value="${p.id}" ${c.parentId === p.id ? 'selected' : ''}>${escapeHtml(getCategoryPathName(p.id))}</option>`).join('')}
+          </select>
+          <div class="help-text">Nest under another category to build a hierarchy (e.g., Dairy → Butter)</div>
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px;">
+          <button class="btn" onclick="cancelCategoryEdit()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveCategory()">Save</button>
+        </div>
+      </div>
+    </div>
+  `;
+  setTimeout(() => document.getElementById('cat-name')?.focus(), 50);
+}
+
+async function saveCategory() {
+  const name = document.getElementById('cat-name').value.trim();
+  if (!name) { alert('Category name required'); return; }
+  const parentId = document.getElementById('cat-parent').value || null;
+  const cat = { id: categoryEditState.id, name, parentId };
+  const idx = state.categories.findIndex(x => x.id === cat.id);
+  if (idx >= 0) state.categories[idx] = cat;
+  else state.categories.push(cat);
+  await saveState();
+  closeModal();
+  if (categoriesModalOpen) renderCategoriesModal();
+  else renderCurrent();
+}
+
+function cancelCategoryEdit() {
+  closeModal();
+  if (categoriesModalOpen) renderCategoriesModal();
+}
+
+async function deleteCategory(id) {
+  const children = getCategoryChildren(id);
+  const products = state.products.filter(p => p.categoryId === id);
+  let msg = 'Delete this category?';
+  if (children.length) msg += `\n${children.length} subcategor${children.length === 1 ? 'y' : 'ies'} will be moved to top level.`;
+  if (products.length) msg += `\n${products.length} product${products.length === 1 ? '' : 's'} will become uncategorized.`;
+  if (!confirm(msg)) return;
+  for (const c of children) c.parentId = null;
+  for (const p of products) p.categoryId = null;
+  state.categories = state.categories.filter(c => c.id !== id);
+  await saveState();
+  if (categoriesModalOpen) renderCategoriesModal();
+  else renderCurrent();
+}
+
+// Inline category creation: prompts for a name, optionally a parent, returns the new id.
+async function createCategoryInline(parentId) {
+  const name = prompt('New category name:');
+  if (!name || !name.trim()) return null;
+  const cat = { id: uid(), name: name.trim(), parentId: parentId || null };
+  state.categories.push(cat);
+  await saveState();
+  return cat.id;
+}
+
+// ============================================================
+// Recipes
+// ============================================================
+// Currently selected recipe id (transient — resets on page reload).
+let _selectedRecipeId = null;
+
+function selectRecipe(id) {
+  _selectedRecipeId = id;
+  renderRecipes();
+}
+
+function renderRecipes() {
+  const root = document.getElementById('recipes-view');
+
+  if (state.recipes.length === 0) {
+    root.innerHTML = `
+      <div class="toolbar">
+        <div class="small">0 recipes</div>
+        <button class="btn btn-primary" onclick="openRecipeModal()">+ New recipe</button>
+      </div>
+      <div class="card empty">No recipes yet. Click "New recipe" to add one.</div>
+    `;
+    return;
+  }
+
+  // Resolve the selected recipe: validate against current list, else default to first.
+  let selected = state.recipes.find(r => r.id === _selectedRecipeId);
+  if (!selected) { selected = state.recipes[0]; _selectedRecipeId = selected.id; }
+
+  // Recipe selector chips
+  const chips = state.recipes.map(r => {
+    const isActive = r.id === selected.id;
+    return `<button class="recipe-chip${isActive ? ' active' : ''}" onclick="selectRecipe('${r.id}')">${escapeHtml(r.name)}</button>`;
+  }).join('');
+
+  root.innerHTML = `
+    <div class="toolbar">
+      <div class="small">${state.recipes.length} recipe${state.recipes.length === 1 ? '' : 's'}</div>
+      <button class="btn btn-primary" onclick="openRecipeModal()">+ New recipe</button>
+    </div>
+    <div class="recipe-selector">${chips}</div>
+    ${renderRecipeCard(selected)}
+  `;
+}
+
+// Render a single recipe card with always-visible ingredients
+// Per-card view state: recipe id -> { batchMultiplier }
+// This is transient (resets on page reload) — affects display only, not the saved recipe.
+const _recipeViewState = {};
+
+function getRecipeBatches(r) {
+  const vs = _recipeViewState[r.id];
+  if (vs && typeof vs.batchMultiplier === 'number' && vs.batchMultiplier > 0) {
+    return vs.batchMultiplier;
+  }
+  return r.batches || 1;
+}
+
+function setRecipeBatchMultiplier(recipeId, value) {
+  const v = parseFloat(value);
+  if (!_recipeViewState[recipeId]) _recipeViewState[recipeId] = {};
+  _recipeViewState[recipeId].batchMultiplier = (isNaN(v) || v <= 0) ? null : v;
+  renderRecipes();
+}
+
+function renderRecipeCard(r) {
+  const effectiveBatches = getRecipeBatches(r);
+  const batchScale = effectiveBatches / (r.batches || 1); // multiplier to apply to ingredient qtys
+  const cookies = effectiveBatches * (r.cookiesPerBatch || 1);
+  const cookiesDisplay = Number.isInteger(cookies) ? cookies : cookies.toFixed(1);
+  const cpbDisplay = Number.isInteger(r.cookiesPerBatch) ? r.cookiesPerBatch : r.cookiesPerBatch.toFixed(1);
+
+  // For each ingredient, compute scaled qty, product, cost, and in-stock status
+  function computeLine(ing) {
+    const scaledQty = (ing.quantity || 0) * batchScale;
+    const product = findMatchingProduct(ing);
+    let lineCost = null;
+    let canConvert = false;
+    let enoughStock = null; // null = unknown, true/false = known
+    let neededInPackageUnit = null;
+    let neededPackages = null;
+    if (product) {
+      neededInPackageUnit = convertQuantity(scaledQty, ing.unit, product.packageUnit, product);
+      if (neededInPackageUnit !== null) {
+        canConvert = true;
+        const pricePerPackageUnit = product.packageSize > 0 ? product.price / product.packageSize : null;
+        if (pricePerPackageUnit !== null && product.price > 0) {
+          lineCost = neededInPackageUnit * pricePerPackageUnit;
+        }
+        // Stock is in packages; convert need-in-units to need-in-packages to compare.
+        if (product.packageSize > 0) {
+          neededPackages = neededInPackageUnit / product.packageSize;
+          enoughStock = (product.stock || 0) >= neededPackages;
+        }
+      }
+    }
+    return { ing, product, scaledQty, lineCost, canConvert, enoughStock, neededInPackageUnit, neededPackages };
+  }
+
+  const lines = r.ingredients.map(computeLine);
+
+  // Aggregate stats
+  const totalCost = lines.reduce((sum, l) => sum + (l.lineCost || 0), 0);
+  const linesWithUnknownCost = lines.filter(l => l.lineCost === null);
+  const allCostsKnown = linesWithUnknownCost.length === 0;
+  const noProductLines = linesWithUnknownCost.filter(l => !l.product);
+  const noConvLines = linesWithUnknownCost.filter(l => l.product && !l.canConvert);
+  const noPriceLines = linesWithUnknownCost.filter(l => l.product && l.canConvert);
+
+  // Group by top-level category
+  function classifyIngredient(item) {
+    if (item.product && item.product.categoryId) {
+      const path = getCategoryPath(item.product.categoryId);
+      if (path.length > 0) return { topId: path[0].id, topLabel: path[0].name };
+    }
+    // Try to derive from ingredient's category filter
+    if (item.ing.filterCategoryId) {
+      const path = getCategoryPath(item.ing.filterCategoryId);
+      if (path.length > 0) return { topId: path[0].id, topLabel: path[0].name };
+    }
+    return { topId: '_other', topLabel: 'Other' };
+  }
+
+  const groups = new Map();
+  lines.forEach((line, idx) => {
+    const c = classifyIngredient(line);
+    if (!groups.has(c.topId)) groups.set(c.topId, { label: c.topLabel, lines: [] });
+    groups.get(c.topId).lines.push({ ...line, ingIndex: idx });
+  });
+
+  const TOP_ORDER = ['DRY INGREDIENTS', 'WET INGREDIENTS', 'MIX-INS'];
+  const groupKeys = [...groups.keys()].sort((a, b) => {
+    if (a === '_other') return 1;
+    if (b === '_other') return -1;
+    const la = groups.get(a).label, lb = groups.get(b).label;
+    const ra = TOP_ORDER.indexOf(la);
+    const rb = TOP_ORDER.indexOf(lb);
+    const fa = ra === -1 ? TOP_ORDER.length : ra;
+    const fb = rb === -1 ? TOP_ORDER.length : rb;
+    if (fa !== fb) return fa - fb;
+    return la.localeCompare(lb);
+  });
+
+  // Build the ingredient table rows
+  const rows = [];
+  for (const key of groupKeys) {
+    const g = groups.get(key);
+    rows.push(`<tr class="rcp-group-row"><td colspan="5">${escapeHtml(g.label)}</td></tr>`);
+    for (const line of g.lines) {
+      rows.push(renderRecipeLineRow(r, line));
+    }
+  }
+
+  // Build any warning note
+  let warningNote = '';
+  if (!allCostsKnown) {
+    const bits = [];
+    if (noProductLines.length) bits.push(`${noProductLines.length} unlinked`);
+    if (noConvLines.length) bits.push(`${noConvLines.length} need unit conversion`);
+    if (noPriceLines.length) bits.push(`${noPriceLines.length} missing price`);
+    warningNote = `<div class="rcp-warning">Total cost is partial — ${bits.join(', ')}. Set up unit conversions on each product (Inventory → Edit) and confirm prices to complete the calculation.</div>`;
+  }
+
+  const batchInputValue = effectiveBatches;
+  const isMultiplied = effectiveBatches !== (r.batches || 1);
+
+  return `
+    <div class="card recipe-card">
+      <div class="row-between" style="margin-bottom: 12px; align-items: flex-start;">
+        <div>
+          <div style="font-weight: 500; font-size: 16px;">${escapeHtml(r.name)}</div>
+          <div class="small">Saved as ${r.batches} batch${r.batches === 1 ? '' : 'es'} × ${cpbDisplay} cookies/batch</div>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button class="btn" style="padding: 2px 8px; font-size: 11px;" onclick="openRecipeModal('${r.id}')">Edit</button>
+          <button class="btn btn-danger" style="padding: 2px 7px; font-size: 11px;" onclick="deleteRecipe('${r.id}')">×</button>
+        </div>
+      </div>
+
+      <div class="rcp-controls">
+        <div class="rcp-control-group">
+          <label class="small">Make</label>
+          <input type="number" min="0.5" step="0.5" value="${batchInputValue}" class="rcp-batch-input" onchange="setRecipeBatchMultiplier('${r.id}', this.value)" />
+          <span class="small">batch${batchInputValue === 1 ? '' : 'es'} → ${cookiesDisplay} cookies</span>
+          ${isMultiplied ? `<button class="btn" style="padding: 2px 8px; font-size: 11px; margin-left: 6px;" onclick="setRecipeBatchMultiplier('${r.id}', '${r.batches}')">reset</button>` : ''}
+        </div>
+      </div>
+
+      ${warningNote}
+
+      <div style="margin-top: 8px;">
+        <table class="rcp-table" style="table-layout: fixed; width: 100%;">
+          <colgroup>
+            <col style="width: 20%;" />
+            <col style="width: 30%;" />
+            <col style="width: 14%;" />
+            <col style="width: 14%;" />
+            <col style="width: 22%;" />
+          </colgroup>
+          <thead><tr>
+            <th>Ingredient</th>
+            <th>Product</th>
+            <th style="text-align:right;">Quantity</th>
+            <th style="text-align:right;">Cost</th>
+            <th style="text-align:center;">In stock?</th>
+          </tr></thead>
+          <tbody>${rows.join('')}</tbody>
+          <tfoot>
+            <tr class="rcp-total-row">
+              <td>Total recipe cost</td>
+              <td></td>
+              <td></td>
+              <td style="text-align:right; font-weight: 500;">${allCostsKnown ? fmt$(totalCost) : `~${fmt$(totalCost)}*`}</td>
+              <td></td>
+            </tr>
+            <tr class="rcp-total-row">
+              <td>Cost per cookie</td>
+              <td></td>
+              <td></td>
+              <td style="text-align:right; font-weight: 500;">${allCostsKnown ? fmt$4(totalCost / cookies) : `~${fmt$4(totalCost / cookies)}*`}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+        ${!allCostsKnown ? '<div class="small" style="margin-top: 6px; color: #888780;">* Partial total — excludes lines marked "—"</div>' : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderRecipeLineRow(recipe, line) {
+  const { ing, product, scaledQty, lineCost, canConvert, enoughStock } = line;
+  const qtyDisplay = formatQty(scaledQty);
+
+  // On the recipe card, show ALL products in the dropdown so the user can swap
+  // across categories without being locked into the ingredient's saved filter.
+  // (The Edit modal still uses the filter category to narrow choices.)
+  const candidateProducts = state.products;
+  const ddOptions = [
+    { value: 'any', name: 'Any matching by name', special: true },
+    { value: '', name: '— pick specific —', special: true },
+    ...candidateProducts.map(p => ({
+      value: 'prod:' + p.id,
+      name: p.name,
+      sub: productSkuDetail(p)
+    }))
+  ];
+  const currentValue = ing.useAnyMatching ? 'any' : (ing.productId ? 'prod:' + ing.productId : '');
+
+  // Stable DOM id from recipe + ingredient id
+  const ddId = `rcp-prod-${recipe.id}-${ing.id}`;
+  // Per-line change handler (saves immediately)
+  const handlerName = `__rcpLineChange_${recipe.id}_${ing.id}`;
+  window[handlerName] = (value) => updateRecipeIngredientProductInline(recipe.id, ing.id, value);
+
+  // Cost cell
+  let costCell = '';
+  if (lineCost !== null && lineCost !== undefined) {
+    costCell = fmt$(lineCost);
+  } else if (!product) {
+    costCell = '<span class="small" style="color: #888780;">—</span>';
+  } else if (!canConvert) {
+    costCell = '<span class="small" style="color: #888780;" title="No unit conversion available between recipe unit and product package unit">—</span>';
+  } else {
+    costCell = '<span class="small" style="color: #888780;" title="No price set on product">—</span>';
+  }
+
+  // Stock cell
+  let stockCell = '';
+  if (!product) {
+    stockCell = '<span class="badge badge-gray">—</span>';
+  } else if (!canConvert) {
+    stockCell = '<span class="badge badge-gray" title="Cannot convert units to check stock">?</span>';
+  } else if (line.neededPackages === null) {
+    stockCell = '<span class="badge badge-gray" title="Product has no package size set">?</span>';
+  } else if (enoughStock === true) {
+    stockCell = '<span class="badge badge-ok">Yes</span>';
+  } else {
+    // Need more than current stock — show how short, in packages
+    const shortPkg = line.neededPackages - (product.stock || 0);
+    const tooltip = `Need ${formatQty(line.neededPackages)} pkg (${formatQty(line.neededInPackageUnit)} ${product.packageUnit}); have ${formatQty(product.stock || 0)} pkg`;
+    stockCell = `<span class="badge badge-out" title="${tooltip}">Short ${formatQty(shortPkg)} pkg</span>`;
+  }
+
+  return `
+    <tr>
+      <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; font-size: 12px;" title="${escapeHtml(ing.name)}">${escapeHtml(ing.name)}</td>
+      <td>${customProductDropdown(ddId, ddOptions, currentValue, handlerName, { placeholder: '— unlinked —' })}</td>
+      <td style="text-align:right; font-variant-numeric: tabular-nums; white-space: nowrap;">${qtyDisplay} <span class="small">${escapeHtml(ing.unit)}</span></td>
+      <td style="text-align:right; font-variant-numeric: tabular-nums;">${costCell}</td>
+      <td style="text-align:center;">${stockCell}</td>
+    </tr>
+  `;
+}
+
+// Format a quantity nicely (drop trailing zeros, sensible decimals)
+function formatQty(n) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  if (Number.isInteger(n)) return String(n);
+  // Up to 2 decimals, trim trailing zeros
+  return n.toFixed(2).replace(/\.?0+$/, '');
+}
+
+// Update a recipe ingredient's product link from the in-card dropdown — saves immediately.
+async function updateRecipeIngredientProductInline(recipeId, ingId, value) {
+  const recipe = state.recipes.find(r => r.id === recipeId);
+  if (!recipe) return;
+  const ing = recipe.ingredients.find(i => i.id === ingId);
+  if (!ing) return;
+  if (value === 'any') {
+    ing.useAnyMatching = true;
+    ing.productId = null;
+  } else if (value && value.startsWith('prod:')) {
+    ing.useAnyMatching = false;
+    ing.productId = value.slice(5);
+  } else {
+    ing.useAnyMatching = false;
+    ing.productId = null;
+  }
+  await saveState();
+  renderRecipes();
+}
+
+let recipeEditState = null;
+
+function openRecipeModal(recipeId) {
+  const r = recipeId ? state.recipes.find(x => x.id === recipeId) : null;
+  recipeEditState = {
+    id: r?.id || uid(),
+    name: r?.name || '',
+    batches: r?.batches || 12,
+    cookiesPerBatch: r?.cookiesPerBatch || 12,
+    ingredients: r ? JSON.parse(JSON.stringify(r.ingredients)) : [{ id: uid(), name: '', quantity: '', unit: 'g', productId: null, useAnyMatching: false, filterCategoryId: null }]
+  };
+  // Ensure filterCategoryId exists on legacy ingredients
+  recipeEditState.ingredients.forEach(i => { if (i.filterCategoryId === undefined) i.filterCategoryId = null; });
+  renderRecipeModal();
+}
+
+function renderRecipeModal() {
+  const r = recipeEditState;
+  if (!r) return;
+
+  // For each ingredient, compute which products to show in its dropdown
+  // (filtered by filterCategoryId if set)
+  document.getElementById('modal-root').innerHTML = `
+    <div class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+      <div class="modal" style="max-width: 920px;">
+        <h2>${state.recipes.find(x => x.id === r.id) ? 'Edit' : 'New'} recipe</h2>
+        <div class="field"><label>Recipe name</label>
+          <input type="text" id="recipe-name" value="${escapeHtml(r.name)}" placeholder="e.g., Chocolate chip" /></div>
+        <div class="grid grid-2">
+          <div class="field"><label>Number of batches</label>
+            <input type="number" id="recipe-batches" value="${r.batches}" min="1" /></div>
+          <div class="field"><label>Cookies per batch</label>
+            <input type="number" id="recipe-cpb" step="0.5" value="${r.cookiesPerBatch}" min="0.5" /></div>
+        </div>
+        <div style="font-weight: 500; margin: 16px 0 8px;">Ingredients</div>
+        <div class="ingredient-row" style="font-size: 11px; color: #5F5E5A;">
+          <div>Name</div><div>Qty</div><div>Unit</div><div>Category filter</div><div>Product</div><div></div>
+        </div>
+        ${r.ingredients.map((ing, i) => renderIngredientRow(ing, i)).join('')}
+        <button class="btn btn-sm" onclick="addIngredient()" style="margin-top: 4px;">+ Add ingredient</button>
+        <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px;">
+          <button class="btn" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveRecipe()">Save recipe</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderIngredientRow(ing, i) {
+  // Build product options narrowed by filterCategoryId if set
+  let productOptions;
+  if (ing.filterCategoryId) {
+    productOptions = getProductsInCategoryTree(ing.filterCategoryId);
+  } else {
+    productOptions = state.products;
+  }
+
+  // Build category dropdown (flat list with indented paths)
+  const sortedCats = [...state.categories].sort((a, b) =>
+    getCategoryPathName(a.id).localeCompare(getCategoryPathName(b.id))
+  );
+
+  // Build custom dropdown options for the product picker
+  const ddOptions = [
+    { value: 'any', name: 'Any matching by name', special: true },
+    { value: '', name: '— pick specific —', special: true },
+    ...productOptions.map(p => ({
+      value: 'prod:' + p.id,
+      name: p.name,
+      sub: productSkuDetail(p)
+    }))
+  ];
+  const currentValue = ing.useAnyMatching ? 'any' : (ing.productId ? 'prod:' + ing.productId : '');
+
+  // Stable per-row id
+  const ddId = `ing-product-dd-${i}`;
+  // Register a global handler for this specific row
+  window['__ingProductChange_' + i] = (value) => updateIngredientMatch(i, value);
+
+  return `
+    <div class="ingredient-row">
+      <input type="text" value="${escapeHtml(ing.name)}" placeholder="flour" onchange="updateIngredient(${i}, 'name', this.value)" />
+      <input type="number" step="0.01" value="${ing.quantity}" placeholder="0" onchange="updateIngredient(${i}, 'quantity', parseFloat(this.value)||0)" />
+      <select onchange="updateIngredient(${i}, 'unit', this.value)">
+        ${ALL_UNITS.map(u => `<option value="${u}" ${ing.unit === u ? 'selected' : ''}>${u}</option>`).join('')}
+      </select>
+      <select onchange="updateIngredientCategoryFilter(${i}, this.value)" title="Narrow product list by category">
+        <option value="">— any category —</option>
+        ${sortedCats.map(c => `<option value="${c.id}" ${ing.filterCategoryId === c.id ? 'selected' : ''}>${escapeHtml(getCategoryPathName(c.id))}</option>`).join('')}
+      </select>
+      ${customProductDropdown(ddId, ddOptions, currentValue, '__ingProductChange_' + i, { placeholder: '— pick product —' })}
+      <button class="icon-btn" onclick="removeIngredient(${i})" title="Remove">×</button>
+    </div>
+  `;
+}
+
+function updateIngredient(i, field, value) { recipeEditState.ingredients[i][field] = value; }
+function updateIngredientMatch(i, value) {
+  if (value === 'any') { recipeEditState.ingredients[i].useAnyMatching = true; recipeEditState.ingredients[i].productId = null; }
+  else if (value.startsWith('prod:')) { recipeEditState.ingredients[i].useAnyMatching = false; recipeEditState.ingredients[i].productId = value.slice(5); }
+  else { recipeEditState.ingredients[i].useAnyMatching = false; recipeEditState.ingredients[i].productId = null; }
+  renderRecipeModal();
+}
+function updateIngredientCategoryFilter(i, value) {
+  recipeEditState.ingredients[i].filterCategoryId = value || null;
+  // If the selected product is no longer in the filtered category, clear it
+  const ing = recipeEditState.ingredients[i];
+  if (ing.productId && ing.filterCategoryId) {
+    const allowed = getProductsInCategoryTree(ing.filterCategoryId);
+    if (!allowed.find(p => p.id === ing.productId)) {
+      ing.productId = null;
+    }
+  }
+  renderRecipeModal();
+}
+function addIngredient() {
+  recipeEditState.ingredients.push({ id: uid(), name: '', quantity: '', unit: 'g', productId: null, useAnyMatching: false, filterCategoryId: null });
+  renderRecipeModal();
+}
+function removeIngredient(i) { recipeEditState.ingredients.splice(i, 1); renderRecipeModal(); }
+
+async function saveRecipe() {
+  const name = document.getElementById('recipe-name').value.trim();
+  const batches = parseInt(document.getElementById('recipe-batches').value) || 1;
+  const cpb = parseFloat(document.getElementById('recipe-cpb').value) || 1;
+  if (!name) { alert('Recipe name required'); return; }
+  const cleaned = recipeEditState.ingredients.filter(i => i.name.trim());
+  const recipe = { id: recipeEditState.id, name, batches, cookiesPerBatch: cpb, ingredients: cleaned };
+  const idx = state.recipes.findIndex(x => x.id === recipe.id);
+  if (idx >= 0) state.recipes[idx] = recipe; else state.recipes.push(recipe);
+  _selectedRecipeId = recipe.id;
+  await saveState();
+  closeModal();
+  renderCurrent();
+}
+
+async function deleteRecipe(id) {
+  if (!confirm('Delete this recipe?')) return;
+  state.recipes = state.recipes.filter(r => r.id !== id);
+  if (_selectedRecipeId === id) _selectedRecipeId = null;
+  await saveState();
+  renderCurrent();
+}
+
+// ============================================================
+// Products (with category grouping)
+// ============================================================
+let productCategoryFilter = ''; // '' = all, 'none' = uncategorized, else category id
+
+function renderProducts() {
+  const root = document.getElementById('products-view');
+  const sortedCats = [...state.categories].sort((a, b) =>
+    getCategoryPathName(a.id).localeCompare(getCategoryPathName(b.id))
+  );
+
+  // Filter products
+  let filtered = state.products;
+  if (productCategoryFilter === 'none') filtered = state.products.filter(p => !p.categoryId);
+  else if (productCategoryFilter) filtered = getProductsInCategoryTree(productCategoryFilter);
+
+  root.innerHTML = `
+    <div class="toolbar">
+      <div class="filter-bar">
+        <span class="small">${filtered.length} of ${state.products.length} product${state.products.length === 1 ? '' : 's'}</span>
+        <select onchange="setProductFilter(this.value)" style="width: auto; min-width: 200px;">
+          <option value="">All categories</option>
+          <option value="none" ${productCategoryFilter === 'none' ? 'selected' : ''}>— uncategorized —</option>
+          ${sortedCats.map(c => `<option value="${c.id}" ${productCategoryFilter === c.id ? 'selected' : ''}>${escapeHtml(getCategoryPathName(c.id))} (${countProductsInCategoryTree(c.id)})</option>`).join('')}
+        </select>
+      </div>
+      <div style="display: flex; gap: 6px;">
+        <button class="btn" onclick="openCategoriesModal()">Manage categories</button>
+        <button class="btn btn-primary" onclick="openProductModal()">+ New product</button>
+      </div>
+    </div>
+    ${state.products.length === 0 ? `
+      <div class="card empty">No products yet. Click "New product" to add one.</div>
+    ` : renderProductsGrouped(filtered)}
+  `;
+}
+
+function setProductFilter(val) {
+  productCategoryFilter = val;
+  renderProducts();
+}
+
+// Shared table column structure for the Inventory list
+const INVENTORY_COLGROUP = `
+  <colgroup>
+    <col style="width: 22%;" />
+    <col style="width: 11%;" />
+    <col style="width: 10%;" />
+    <col style="width: 9%;" />
+    <col style="width: 11%;" />
+    <col style="width: 10%;" />
+    <col style="width: 7%;" />
+    <col style="width: 7%;" />
+    <col style="width: 13%;" />
+  </colgroup>
+`;
+const INVENTORY_THEAD = `
+  <thead><tr>
+    <th>Product</th>
+    <th>Store</th>
+    <th style="text-align:right;">Package</th>
+    <th style="text-align:right;">Price</th>
+    <th style="text-align:right;">$/unit</th>
+    <th>Stock</th>
+    <th style="text-align:center;">Status</th>
+    <th>History</th>
+    <th></th>
+  </tr></thead>
+`;
+
+function renderProductsGrouped(products) {
+  // Build nested structure: topId -> subCategoryId -> products[]
+  function classify(p) {
+    if (!p.categoryId) return { topId: '_none', topLabel: 'Uncategorized', subId: null, subLabel: null };
+    const path = getCategoryPath(p.categoryId);
+    if (path.length === 0) return { topId: '_none', topLabel: 'Uncategorized', subId: null, subLabel: null };
+    const top = path[0];
+    const sub = path.length > 1 ? path[1] : null;
+    return {
+      topId: top.id,
+      topLabel: top.name,
+      subId: sub ? sub.id : top.id,
+      subLabel: sub ? sub.name : null
+    };
+  }
+
+  const tree = new Map();
+  for (const p of products) {
+    const c = classify(p);
+    if (!tree.has(c.topId)) tree.set(c.topId, { label: c.topLabel, subs: new Map() });
+    const topBucket = tree.get(c.topId);
+    if (!topBucket.subs.has(c.subId)) topBucket.subs.set(c.subId, { label: c.subLabel, products: [] });
+    topBucket.subs.get(c.subId).products.push(p);
+  }
+
+  // Add empty sub-categories from the catalog (categories whose parent is a top-level group
+  // and which currently have no products). They'll render as empty groups with an "+ Add product" row.
+  const topLevelCats = state.categories.filter(c => !c.parentId);
+  for (const topCat of topLevelCats) {
+    // Ensure the top-level exists in tree even if no products are under it yet
+    if (!tree.has(topCat.id)) tree.set(topCat.id, { label: topCat.name, subs: new Map() });
+    const topBucket = tree.get(topCat.id);
+    // Find sub-categories under this top-level
+    const subs = state.categories.filter(c => c.parentId === topCat.id);
+    for (const subCat of subs) {
+      if (!topBucket.subs.has(subCat.id)) {
+        topBucket.subs.set(subCat.id, { label: subCat.name, products: [], isEmpty: true, categoryId: subCat.id });
+      }
+    }
+  }
+
+  const TOP_LEVEL_ORDER = ['DRY INGREDIENTS', 'WET INGREDIENTS', 'MIX-INS'];
+  function topLevelRank(label) {
+    const idx = TOP_LEVEL_ORDER.indexOf(label);
+    return idx === -1 ? TOP_LEVEL_ORDER.length : idx;
+  }
+  const topKeys = [...tree.keys()].sort((a, b) => {
+    if (a === '_none') return 1;
+    if (b === '_none') return -1;
+    const la = tree.get(a).label;
+    const lb = tree.get(b).label;
+    const ra = topLevelRank(la);
+    const rb = topLevelRank(lb);
+    if (ra !== rb) return ra - rb;
+    return la.localeCompare(lb);
+  });
+
+  const sections = topKeys.map(topId => {
+    const top = tree.get(topId);
+    const totalProducts = [...top.subs.values()].reduce((sum, s) => sum + s.products.length, 0);
+
+    // Build entries within this top-level group.
+    // Single-product sub-categories render flat (use product name).
+    // Multi-product sub-categories render as a group (sub-header + indented products).
+    // Empty sub-categories render as a group with an "+ Add product" row.
+    const entries = [];
+    for (const [subId, sub] of top.subs.entries()) {
+      if (sub.isEmpty) {
+        // Empty category — render as a group with no products (will get +Add row)
+        entries.push({ type: 'empty', sortKey: sub.label, label: sub.label, categoryId: sub.categoryId });
+      } else if (sub.label === null) {
+        // Directly under top-level (no intermediate sub-category)
+        for (const p of sub.products) entries.push({ type: 'flat', sortKey: p.name, product: p });
+      } else if (sub.products.length === 1) {
+        entries.push({ type: 'flat', sortKey: sub.products[0].name, product: sub.products[0] });
+      } else {
+        const sortedProds = [...sub.products].sort((a, b) => a.name.localeCompare(b.name));
+        entries.push({ type: 'group', sortKey: sub.label, label: sub.label, products: sortedProds });
+      }
+    }
+    entries.sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+
+    const rows = entries.map(e => {
+      if (e.type === 'flat') {
+        return renderProductRow(e.product);
+      }
+      if (e.type === 'empty') {
+        const header = `<tr class="subgroup-row"><td colspan="9">${escapeHtml(e.label)}<span class="subgroup-count">0</span></td></tr>`;
+        const addRow = `<tr class="empty-cat-row"><td colspan="9" style="padding-left: 28px;">
+          <span class="small" style="font-style: italic;">No products yet.</span>
+          <button class="btn" style="padding: 2px 8px; font-size: 11px; margin-left: 8px;" onclick="openProductModalForCategory('${e.categoryId}')">+ Add product</button>
+        </td></tr>`;
+        return header + addRow;
+      }
+      // group
+      const header = `<tr class="subgroup-row"><td colspan="9">${escapeHtml(e.label)}<span class="subgroup-count">${e.products.length}</span></td></tr>`;
+      const prodRows = e.products.map(p => renderProductRow(p, true)).join('');
+      return header + prodRows;
+    }).join('');
+
+    return `
+      <div class="inv-section">
+        <div class="inv-section-header">
+          <span>${escapeHtml(top.label)}</span>
+          <span class="small" style="font-weight: 400;">${totalProducts} product${totalProducts === 1 ? '' : 's'}</span>
+        </div>
+        <div class="card" style="padding: 0;">
+          <table style="table-layout: fixed; width: 100%;">
+            ${INVENTORY_COLGROUP}
+            ${INVENTORY_THEAD}
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  });
+
+  return sections.join('');
+}
+
+function renderProductRow(p, indent) {
+  const history = p.priceHistory || [];
+  const prev = history.length > 1 ? history[history.length - 2] : null;
+  const trend = prev ? (p.price > prev.price ? 'up' : p.price < prev.price ? 'down' : 'same') : null;
+
+  // Status (stock is now in packages):
+  //   Out: stock <= 0
+  //   Low: 0 < stock < 0.25 (less than a quarter of a package)
+  //   OK: >= 0.25
+  //   — : packageSize not set (treat as informational)
+  let status;
+  if (p.stock <= 0) status = '<span class="badge badge-out">Out</span>';
+  else if (p.stock < 0.25) status = '<span class="badge badge-low">Low</span>';
+  else status = '<span class="badge badge-ok">OK</span>';
+
+  const indentStyle = indent ? 'padding-left: 28px;' : '';
+
+  return `
+    <tr>
+      <td style="overflow: hidden; text-overflow: ellipsis; ${indentStyle}">
+        <div style="font-weight: 500;">${escapeHtml(p.name)}</div>
+      </td>
+      <td class="small" style="overflow: hidden; text-overflow: ellipsis;">${escapeHtml(p.store || '—')}</td>
+      <td style="text-align:right;">${p.packageSize || '—'} ${p.packageUnit}</td>
+      <td style="text-align:right;">
+        ${fmt$(p.price)}
+        ${trend === 'up' ? `<div class="price-change price-up">↑ ${fmt$(prev.price)}</div>` : ''}
+        ${trend === 'down' ? `<div class="price-change price-down">↓ ${fmt$(prev.price)}</div>` : ''}
+      </td>
+      <td style="text-align:right;" class="small">${p.packageSize > 0 && p.price > 0 ? fmt$4(p.price / p.packageSize) + '/' + p.packageUnit : '—'}</td>
+      <td style="white-space: nowrap;">
+        <input type="number" step="0.01" value="${p.stock}" onchange="setStock('${p.id}', this.value)" style="width: 56px; text-align: right; padding: 4px 6px; font-size: 12px;" title="Number of packages in stock" />
+        <span class="small">pkg</span>
+      </td>
+      <td style="text-align:center;">${status}</td>
+      <td><details><summary>${history.length}</summary>
+        <div style="margin-top: 6px; min-width: 180px;">
+        ${history.length === 0 ? '<div class="small">No history</div>' : history.slice().reverse().map(h => `
+          <div class="history-row">
+            <span>${h.date}${h.source === 'receipt' ? ' <span class="badge badge-blue" style="font-size:10px">receipt</span>' : ''}</span>
+            <span style="font-weight: 500;">${fmt$(h.price)}</span>
+          </div>
+        `).join('')}
+        </div>
+      </details></td>
+      <td style="text-align:right; white-space: nowrap;">
+        <button class="btn" style="padding: 2px 8px; font-size: 11px;" onclick="openProductModal('${p.id}')">Edit</button>
+        <button class="btn btn-danger" style="padding: 2px 7px; font-size: 11px;" onclick="deleteProduct('${p.id}')">×</button>
+      </td>
+    </tr>
+  `;
+}
+
+let productEditState = null;
+let productSaveCallback = null;
+
+function openProductModal(productId, prefill) {
+  const p = productId ? state.products.find(x => x.id === productId) : null;
+  productEditState = {
+    id: p?.id || uid(),
+    name: p?.name || prefill?.name || '',
+    store: p?.store || prefill?.store || '',
+    packageSize: p?.packageSize || prefill?.packageSize || '',
+    packageUnit: p?.packageUnit || 'g',
+    price: p?.price || prefill?.price || '',
+    stock: p?.stock !== undefined ? p.stock : 0,
+    categoryId: p?.categoryId || prefill?.categoryId || null,
+    conversions: p ? JSON.parse(JSON.stringify(p.conversions || [])) : [],
+    priceHistory: p?.priceHistory || [],
+    receiptAliases: p?.receiptAliases ? [...p.receiptAliases] : []
+  };
+  productSaveCallback = prefill?._onSave || null;
+  renderProductModal();
+}
+
+// Open the product modal pre-filled with a specific category (used by the inline
+// "+ Add product" button on empty category rows in the Inventory list).
+function openProductModalForCategory(categoryId) {
+  openProductModal(null, { categoryId });
+}
+
+function renderProductModal() {
+  const p = productEditState;
+  if (!p) return;
+  const isNew = !state.products.find(x => x.id === p.id);
+  const sortedCats = [...state.categories].sort((a, b) =>
+    getCategoryPathName(a.id).localeCompare(getCategoryPathName(b.id))
+  );
+  document.getElementById('modal-root').innerHTML = `
+    <div class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <h2>${isNew ? 'New' : 'Edit'} product${productSaveCallback ? ' (from receipt)' : ''}</h2>
+        <div class="grid grid-2">
+          <div class="field"><label>Product name</label>
+            <input type="text" id="prod-name" value="${escapeHtml(p.name)}" placeholder="e.g., King Arthur AP Flour" /></div>
+          <div class="field"><label>Store</label>
+            <input type="text" id="prod-store" value="${escapeHtml(p.store)}" placeholder="e.g., Costco" /></div>
+        </div>
+        <div class="field">
+          <label>Category</label>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <select id="prod-category" style="flex: 1;">
+              <option value="">— uncategorized —</option>
+              ${sortedCats.map(c => `<option value="${c.id}" ${p.categoryId === c.id ? 'selected' : ''}>${escapeHtml(getCategoryPathName(c.id))}</option>`).join('')}
+            </select>
+            <button class="btn btn-sm" onclick="quickAddCategoryFromProduct()" type="button" title="Create a new category">+ new</button>
+          </div>
+        </div>
+        <div class="grid grid-3">
+          <div class="field"><label>Package size</label>
+            <input type="number" step="0.01" id="prod-size" value="${p.packageSize}" placeholder="5" /></div>
+          <div class="field"><label>Unit</label>
+            <select id="prod-unit">
+              ${ALL_UNITS.map(u => `<option value="${u}" ${p.packageUnit === u ? 'selected' : ''}>${u}</option>`).join('')}
+            </select></div>
+          <div class="field"><label>Price ($)</label>
+            <input type="number" step="0.01" id="prod-price" value="${p.price}" placeholder="14.99" /></div>
+        </div>
+        <div class="field"><label>Current stock (number of packages)</label>
+          <input type="number" step="0.01" id="prod-stock" value="${p.stock}" />
+          <div class="help-text">e.g., 2 means you have 2 full packages. Fractions OK (1.5 = one and a half).</div></div>
+
+        <div style="font-weight: 500; margin: 16px 0 8px;">Unit conversions</div>
+        <div class="help-text" style="margin-bottom: 8px;">Only needed if recipes use a different unit family than the package (e.g., recipe in cups but package in lb).</div>
+        ${p.conversions.length === 0 ? '<div class="small" style="margin-bottom: 8px;">No conversions yet</div>' : ''}
+        ${p.conversions.map((c, i) => `
+          <div class="conv-section">
+            <div class="row" style="gap: 6px; align-items: center;">
+              <input type="number" step="0.01" value="${c.fromQty}" onchange="updateConversion(${i}, 'fromQty', parseFloat(this.value)||0)" style="width: 70px;" />
+              <select onchange="updateConversion(${i}, 'fromUnit', this.value)" style="width: 80px;">
+                ${ALL_UNITS.map(u => `<option value="${u}" ${c.fromUnit === u ? 'selected' : ''}>${u}</option>`).join('')}
+              </select>
+              <span class="small">=</span>
+              <input type="number" step="0.01" value="${c.toQty}" onchange="updateConversion(${i}, 'toQty', parseFloat(this.value)||0)" style="width: 70px;" />
+              <select onchange="updateConversion(${i}, 'toUnit', this.value)" style="width: 80px;">
+                ${ALL_UNITS.map(u => `<option value="${u}" ${c.toUnit === u ? 'selected' : ''}>${u}</option>`).join('')}
+              </select>
+              <button class="icon-btn" onclick="removeConversion(${i})">×</button>
+            </div>
+          </div>
+        `).join('')}
+        <button class="btn btn-sm" onclick="addConversion()" style="margin-top: 8px;">+ Add conversion</button>
+
+        <div style="font-weight: 500; margin: 16px 0 8px;">Receipt aliases</div>
+        <div class="help-text" style="margin-bottom: 8px;">Raw receipt text we've learned maps to this product. New aliases get added automatically when you apply receipts. Remove any wrong ones below.</div>
+        ${(p.receiptAliases && p.receiptAliases.length > 0) ? `
+          <div class="alias-list">
+            ${p.receiptAliases.map((alias, i) => `
+              <div class="alias-row">
+                <span class="alias-text">${escapeHtml(alias)}</span>
+                <button class="icon-btn" onclick="removeReceiptAlias(${i})" title="Remove this alias">×</button>
+              </div>
+            `).join('')}
+          </div>
+        ` : '<div class="small" style="margin-bottom: 8px;">No aliases yet</div>'}
+
+        <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px;">
+          <button class="btn" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveProduct()">Save product</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function quickAddCategoryFromProduct() {
+  syncProductFormToState();
+  const newCatId = await createCategoryInline(null);
+  if (newCatId) {
+    productEditState.categoryId = newCatId;
+    renderProductModal();
+  }
+}
+
+// Read current form field values from the DOM into productEditState. Called before
+// any partial re-render (e.g., adding/removing a conversion) so typed values aren't lost.
+function syncProductFormToState() {
+  const p = productEditState;
+  if (!p) return;
+  const get = id => document.getElementById(id);
+  if (get('prod-name')) p.name = get('prod-name').value;
+  if (get('prod-store')) p.store = get('prod-store').value;
+  if (get('prod-category')) p.categoryId = get('prod-category').value || null;
+  if (get('prod-size')) p.packageSize = parseFloat(get('prod-size').value) || 0;
+  if (get('prod-unit')) p.packageUnit = get('prod-unit').value;
+  if (get('prod-price')) p.price = parseFloat(get('prod-price').value) || 0;
+  if (get('prod-stock')) p.stock = parseFloat(get('prod-stock').value) || 0;
+}
+
+function updateConversion(i, field, value) { productEditState.conversions[i][field] = value; }
+function addConversion() { syncProductFormToState(); productEditState.conversions.push({ fromQty: 1, fromUnit: 'cup', toQty: 120, toUnit: 'g' }); renderProductModal(); }
+function removeConversion(i) { syncProductFormToState(); productEditState.conversions.splice(i, 1); renderProductModal(); }
+function removeReceiptAlias(i) { syncProductFormToState(); productEditState.receiptAliases.splice(i, 1); renderProductModal(); }
+
+async function saveProduct() {
+  const name = document.getElementById('prod-name').value.trim();
+  if (!name) { alert('Product name required'); return; }
+  const newPrice = parseFloat(document.getElementById('prod-price').value) || 0;
+  const existing = state.products.find(x => x.id === productEditState.id);
+  const priceHistory = productEditState.priceHistory ? [...productEditState.priceHistory] : [];
+  if (existing && existing.price !== newPrice) {
+    priceHistory.push({ date: today(), price: newPrice, source: 'manual' });
+  } else if (!existing && newPrice > 0) {
+    priceHistory.push({ date: today(), price: newPrice, source: productSaveCallback ? 'receipt' : 'manual' });
+  }
+  const product = {
+    id: productEditState.id,
+    name,
+    store: document.getElementById('prod-store').value.trim(),
+    categoryId: document.getElementById('prod-category').value || null,
+    packageSize: parseFloat(document.getElementById('prod-size').value) || 0,
+    packageUnit: document.getElementById('prod-unit').value,
+    price: newPrice,
+    stock: parseFloat(document.getElementById('prod-stock').value) || 0,
+    conversions: productEditState.conversions,
+    priceHistory,
+    receiptAliases: productEditState.receiptAliases || []
+  };
+  const idx = state.products.findIndex(x => x.id === product.id);
+  if (idx >= 0) state.products[idx] = product; else state.products.push(product);
+  const callback = productSaveCallback;
+  productSaveCallback = null;
+  await saveState();
+  closeModal();
+  if (callback) callback(product);
+  renderCurrent();
+}
+
+async function deleteProduct(id) {
+  if (!confirm('Delete this product?')) return;
+  state.products = state.products.filter(p => p.id !== id);
+  await saveState();
+  renderCurrent();
+}
+
+// ============================================================
+// Inventory adjustment helper (used in the unified Inventory table)
+// ============================================================
+async function setStock(id, val) { const p = state.products.find(x => x.id === id); if (!p) return; p.stock = parseFloat(val) || 0; await saveState(); renderCurrent(); }
+
+// ============================================================
+// Receipts
+// ============================================================
+function renderReceipts() {
+  const root = document.getElementById('receipts-view');
+  root.innerHTML = `
+    <div class="info-box">
+      <strong>Prototype note:</strong> In the real Claude Code build, you'll upload a photo or PDF and Claude will OCR + parse it via the API. Here, paste receipt text (or use the sample) to see the matching + review flow.
+    </div>
+    <div class="toolbar">
+      <div class="small">${state.receipts.length} receipt${state.receipts.length === 1 ? '' : 's'} processed</div>
+      <div style="display: flex; gap: 6px;">
+        <button class="btn" onclick="loadSampleReceipt()">Try sample</button>
+        <button class="btn btn-primary" onclick="openReceiptModal()">+ Process receipt</button>
+      </div>
+    </div>
+    ${state.receipts.length === 0 ? `
+      <div class="card empty">No receipts processed yet.</div>
+    ` : `
+      <div class="card" style="padding: 0;">
+        <table>
+          <thead><tr><th>Date</th><th>Store</th><th style="text-align:right;">Total</th><th style="text-align:right;">Items</th><th style="text-align:right;">Updated</th><th></th></tr></thead>
+          <tbody>
+            ${state.receipts.slice().reverse().map(r => `
+              <tr>
+                <td>${r.date}</td>
+                <td>${escapeHtml(r.store || '—')}</td>
+                <td style="text-align:right;">${r.total ? fmt$(r.total) : '—'}</td>
+                <td style="text-align:right;">${r.lines.length}</td>
+                <td style="text-align:right;">${r.lines.filter(l => l.action === 'updated' || l.action === 'created').length}</td>
+                <td style="text-align:right;">
+                  <button class="btn btn-sm" onclick="viewReceipt('${r.id}')">View</button>
+                  <button class="btn btn-sm btn-danger" onclick="deleteReceipt('${r.id}')">×</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `}
+  `;
+}
+
+let receiptReviewState = null;
+
+function openReceiptModal(text) {
+  document.getElementById('modal-root').innerHTML = `
+    <div class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <h2>Process receipt</h2>
+        <div class="info-box">In production: upload an image or PDF for OCR. For now, paste the receipt text.</div>
+        <div class="field">
+          <label>Receipt text</label>
+          <textarea id="receipt-text" rows="14" placeholder="PUBLIX\n05/13/2026\n\nFLOUR AP 5LB        14.99\nSUGAR GRANULATED 4LB 8.49\n...\n\nTOTAL                34.56">${text ? escapeHtml(text) : ''}</textarea>
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+          <button class="btn" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="parseAndReview()">Parse →</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function loadSampleReceipt() {
+  const sample = `COSTCO WHOLESALE
+05/12/2026
+
+KS UNSALTED BUTTER 4LB      13.99
+C&H BROWN SUGAR 4LB          7.49
+C&H POWDERED SUGAR 4LB       6.99
+KS LARGE EGGS 24CT           7.29
+KIRKLAND PURE VANILLA 16OZ  31.99
+KS AP FLOUR 25LB            14.49
+MORTON KOSHER SALT 3LB       5.49
+CLABBER GIRL BAKING PWDR    4.29
+ARM HAMMER BAKING SODA 4LB   6.79
+ARGO CORN STARCH 16OZ        3.99
+GHIRARDELLI MILK CHOC 11.5OZ 5.79
+KS SEMISWEET CHOC CHIPS 4.5LB 16.99
+GHIRARDELLI DARK WAFERS 10OZ 5.49
+
+SUBTOTAL                   131.05
+TAX                          0.00
+TOTAL                      131.05`;
+  openReceiptModal(sample);
+}
+
+function parseAndReview() {
+  const text = document.getElementById('receipt-text').value;
+  if (!text.trim()) { alert('Paste some receipt text first'); return; }
+  const parsed = parseReceiptText(text);
+  if (parsed.items.length === 0) { alert('Could not find any line items. Check the format.'); return; }
+  const reviewLines = parsed.items.map(item => buildReviewLine(item, parsed.store));
+  receiptReviewState = {
+    id: uid(),
+    date: parsed.date,
+    store: parsed.store,
+    total: parsed.total,
+    lines: reviewLines,
+    originalText: text
+  };
+  renderReceiptReview();
+}
+
+// Build one review line from a parsed receipt item. Auto-matches if confident,
+// otherwise sets up "new product" mode with reasonable defaults the user can edit.
+function buildReviewLine(item, receiptStore) {
+  const { product, score } = bestProductMatch(item.rawName, receiptStore);
+  const isMatch = score >= 0.5 && product;
+  const pkg = extractPackageInfo(item.rawName);
+  // If we couldn't detect a package size from the name, fall back to the receipt's qty
+  // (usually 1) so the Pkg size field isn't blank. User can adjust.
+  const fallbackSize = pkg.packageSize > 0 ? pkg.packageSize : (item.qty || 1);
+  return {
+    rawName: item.rawName,
+    qty: item.qty,
+    price: item.price,
+    score,
+    productId: isMatch ? product.id : null,
+    mode: isMatch ? 'match' : 'new',
+    markReceived: true,
+    // Editable new-product fields (used when mode='new')
+    newProduct: {
+      categoryId: null,
+      name: toTitleCase(pkg.cleanName || item.rawName),
+      price: item.price,
+      packageUnit: pkg.packageUnit,
+      packageSize: fallbackSize
+    }
+  };
+}
+
+function toTitleCase(s) {
+  return (s || '').toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function renderReceiptReview() {
+  const r = receiptReviewState;
+  if (!r) return;
+
+  // Distinct stores already in inventory, for the datalist
+  const existingStores = [...new Set(state.products.map(p => p.store).filter(Boolean))].sort();
+  const storeDatalistOpts = existingStores.map(s => `<option value="${escapeHtml(s)}"></option>`).join('');
+
+  // Build the review table rows
+  const rowsHtml = r.lines.map((line, i) => renderReceiptReviewRow(line, i)).join('');
+
+  // Counts for summary
+  // A new-mode row "will create" only when a category is picked. Otherwise it'll be ignored on apply.
+  const counts = {
+    match: r.lines.filter(l => l.mode === 'match').length,
+    create: r.lines.filter(l => l.mode === 'new' && l.newProduct.categoryId).length,
+    willIgnore: r.lines.filter(l => l.mode === 'new' && !l.newProduct.categoryId).length,
+    skip: r.lines.filter(l => l.mode === 'skip').length
+  };
+
+  document.getElementById('modal-root').innerHTML = `
+    <div class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+      <div class="modal" style="max-width: 1080px;">
+        <h2>Review receipt</h2>
+
+        <div class="rcpt-header">
+          <div class="field" style="margin: 0; flex: 1;">
+            <label>Store</label>
+            <input type="text" id="rcpt-store-input" value="${escapeHtml(r.store || '')}" list="rcpt-stores-datalist" placeholder="Costco, Publix, …" onchange="updateReceiptStore(this.value)" />
+            <datalist id="rcpt-stores-datalist">${storeDatalistOpts}</datalist>
+          </div>
+          <div class="field" style="margin: 0; width: 140px;">
+            <label>Date</label>
+            <input type="date" value="${r.date}" onchange="receiptReviewState.date = this.value" />
+          </div>
+          <div class="field" style="margin: 0; width: 110px;">
+            <label>Total</label>
+            <input type="number" step="0.01" value="${r.total || ''}" placeholder="—" onchange="receiptReviewState.total = parseFloat(this.value) || null" />
+          </div>
+        </div>
+
+        <div class="rcpt-summary small">
+          <strong>${counts.match}</strong> matched · <strong>${counts.create}</strong> new product${counts.create === 1 ? '' : 's'} · <strong>${counts.willIgnore}</strong> will be ignored · <strong>${counts.skip}</strong> skipped
+        </div>
+
+        <div class="rcpt-table-wrap">
+          <table class="rcpt-table">
+            <colgroup>
+              <col style="width: 22%;" />
+              <col style="width: 10%;" />
+              <col style="width: 38%;" />
+              <col style="width: 12%;" />
+              <col style="width: 18%;" />
+            </colgroup>
+            <thead><tr>
+              <th>Receipt item</th>
+              <th style="text-align:right;">Price</th>
+              <th>Product</th>
+              <th style="text-align:right;">Δ Price</th>
+              <th style="text-align:center;">Action</th>
+            </tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
+
+        <div style="display: flex; gap: 8px; justify-content: space-between; margin-top: 20px;">
+          <button class="btn" onclick="openReceiptModal(receiptReviewState.originalText)">← Edit receipt text</button>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="applyReceipt()">Apply changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Render one row of the review table — switches layout based on line.mode.
+function renderReceiptReviewRow(line, i) {
+  const matchedProd = line.productId ? state.products.find(p => p.id === line.productId) : null;
+
+  // The product cell varies by mode
+  let productCell = '';
+  if (line.mode === 'match') {
+    // Show a dropdown to change which product is matched
+    const ddId = `rcpt-prod-${i}`;
+    const ddOptions = [
+      { value: '__new__', name: 'Create as new product', special: true },
+      { value: '__skip__', name: 'Skip this item', special: true },
+      ...state.products.map(p => ({
+        value: 'prod:' + p.id,
+        name: p.name,
+        sub: productSkuDetail(p)
+      }))
+    ];
+    const handlerName = `__rcptRowMatch_${i}`;
+    window[handlerName] = (value) => handleReceiptRowProductChange(i, value);
+    const currentValue = line.productId ? 'prod:' + line.productId : '';
+    productCell = `<div style="font-size: 11px;">${customProductDropdown(ddId, ddOptions, currentValue, handlerName, { placeholder: '— pick —' })}</div>
+      ${(line.productId && line.score > 0) ? `<div class="small" style="margin-top: 2px;">match ${(line.score * 100).toFixed(0)}%</div>` : ''}`;
+  } else if (line.mode === 'new') {
+    productCell = renderNewProductInline(line, i);
+  } else {
+    productCell = '<div class="small" style="font-style: italic;">Skipped</div>';
+  }
+
+  // Price delta cell (only for matched rows)
+  let deltaCell = '<span class="small">—</span>';
+  if (line.mode === 'match' && matchedProd) {
+    const delta = line.price - matchedProd.price;
+    if (Math.abs(delta) < 0.005) {
+      deltaCell = '<span class="small price-same">same</span>';
+    } else if (delta > 0) {
+      deltaCell = `<span class="small price-up">+${fmt$(delta)}</span>`;
+    } else {
+      deltaCell = `<span class="small price-down">${fmt$(delta)}</span>`;
+    }
+  }
+
+  // Action cell (Skip toggle + add-to-stock checkbox for non-skipped rows)
+  let actionCell = '';
+  if (line.mode === 'skip') {
+    actionCell = `<button class="btn" style="padding: 2px 8px; font-size: 11px;" onclick="setReceiptRowMode(${i}, 'restore')">Restore</button>`;
+  } else {
+    const qtyN = line.qty || 1;
+    const markBtn = `<label class="rcpt-mark-recv small" title="Add ${qtyN} package${qtyN === 1 ? '' : 's'} to this product's stock on apply"><input type="checkbox" ${line.markReceived ? 'checked' : ''} onchange="toggleReceiptMarkReceived(${i}, this.checked)" /> +${qtyN} pkg</label>`;
+    actionCell = `${markBtn}<button class="btn btn-danger" style="padding: 2px 7px; font-size: 11px; margin-left: 4px;" onclick="setReceiptRowMode(${i}, 'skip')" title="Skip this item">×</button>`;
+  }
+
+  let rowCls = '';
+  if (line.mode === 'skip') rowCls = 'rcpt-row-skip';
+  else if (line.mode === 'new' && !line.newProduct.categoryId) rowCls = 'rcpt-row-ignore';
+
+  return `
+    <tr class="${rowCls}">
+      <td>
+        <div style="font-weight: 500; font-size: 12px; word-break: break-word;">${escapeHtml(line.rawName)}</div>
+        <div class="small">qty ${line.qty}</div>
+      </td>
+      <td style="text-align:right;">
+        <input type="number" step="0.01" value="${line.price !== null && line.price !== undefined ? line.price : ''}"
+               class="rcpt-price-input"
+               onchange="updateReceiptLinePrice(${i}, this.value)"
+               placeholder="0.00" />
+      </td>
+      <td>${productCell}</td>
+      <td style="text-align:right;">${deltaCell}</td>
+      <td style="text-align:center;">${actionCell}</td>
+    </tr>
+  `;
+}
+
+// Inline editor for a new product (mode='new'): category, name, price, units, package size.
+function renderNewProductInline(line, i) {
+  const np = line.newProduct;
+
+  // Build the category dropdown using the in-place customProductDropdown component.
+  const categoryOptions = [
+    { value: '', name: '— pick category —', special: true },
+    ...getSortedCategoriesForDropdown().map(c => ({
+      value: 'cat:' + c.id,
+      name: c.name,
+      sub: c.path
+    }))
+  ];
+  const catDdId = `rcpt-newcat-${i}`;
+  const catHandlerName = `__rcptNewCat_${i}`;
+  window[catHandlerName] = (value) => handleReceiptNewProductCategory(i, value);
+  const catCurrentValue = np.categoryId ? 'cat:' + np.categoryId : '';
+
+  return `
+    <div class="rcpt-match-existing-row">
+      <button class="rcpt-match-existing-link" onclick="receiptRowSwitchToMatchMode(${i})" title="Pick an existing product instead of creating a new one">Match to existing…</button>
+    </div>
+    <div class="rcpt-new-grid">
+      <div class="rcpt-new-cat">
+        ${customProductDropdown(catDdId, categoryOptions, catCurrentValue, catHandlerName, { placeholder: '— pick category —' })}
+      </div>
+      <input type="text" class="rcpt-new-name" placeholder="Product name"
+             value="${escapeHtml(np.name)}"
+             onchange="handleReceiptNewProductField(${i}, 'name', this.value)" />
+      <input type="number" step="0.01" class="rcpt-new-pkgsize" placeholder="Pkg size"
+             value="${np.packageSize || ''}"
+             onchange="handleReceiptNewProductField(${i}, 'packageSize', parseFloat(this.value) || 0)" />
+      <select class="rcpt-new-unit" onchange="handleReceiptNewProductField(${i}, 'packageUnit', this.value)">
+        ${ALL_UNITS.map(u => `<option value="${u}" ${np.packageUnit === u ? 'selected' : ''}>${u}</option>`).join('')}
+      </select>
+      <input type="number" step="0.01" class="rcpt-new-price" placeholder="Price"
+             value="${np.price || ''}"
+             onchange="updateReceiptLinePrice(${i}, this.value)" />
+    </div>
+  `;
+}
+
+// Switch an unmatched (mode='new') row to match mode with no product selected,
+// so the user can pick an existing product from the dropdown.
+function receiptRowSwitchToMatchMode(i) {
+  const line = receiptReviewState.lines[i];
+  line.mode = 'match';
+  line.productId = null;
+  renderReceiptReview();
+}
+
+// Helper to flatten categories into a sortable list with hierarchical path strings.
+function getSortedCategoriesForDropdown() {
+  return state.categories.map(c => ({
+    id: c.id,
+    name: c.name,
+    path: getCategoryPathName(c.id)
+  })).sort((a, b) => a.path.localeCompare(b.path));
+}
+
+// Mode changes
+function setReceiptRowMode(i, mode) {
+  const line = receiptReviewState.lines[i];
+  if (mode === 'skip') {
+    line._prevMode = line.mode; // remember so we can restore
+    line.mode = 'skip';
+  } else if (mode === 'restore') {
+    line.mode = line._prevMode || (line.productId ? 'match' : 'new');
+  }
+  renderReceiptReview();
+}
+
+function handleReceiptRowProductChange(i, value) {
+  const line = receiptReviewState.lines[i];
+  if (value === '__new__') {
+    line.mode = 'new';
+    line.productId = null;
+  } else if (value === '__skip__') {
+    line.mode = 'skip';
+  } else if (value && value.startsWith('prod:')) {
+    line.productId = value.slice(5);
+    line.mode = 'match';
+  }
+  renderReceiptReview();
+}
+
+function handleReceiptNewProductField(i, field, value) {
+  receiptReviewState.lines[i].newProduct[field] = value;
+  // For most fields we DON'T re-render — that would steal focus mid-edit.
+  // The delta column doesn't apply in 'new' mode, so no display refresh needed.
+}
+
+function handleReceiptNewProductCategory(i, value) {
+  receiptReviewState.lines[i].newProduct.categoryId = value && value.startsWith('cat:') ? value.slice(4) : null;
+  renderReceiptReview();
+}
+
+function toggleReceiptMarkReceived(i, checked) {
+  receiptReviewState.lines[i].markReceived = checked;
+}
+
+// Editable receipt price (per row). Re-renders so Δ Price reflects the change.
+function updateReceiptLinePrice(i, value) {
+  const line = receiptReviewState.lines[i];
+  const v = parseFloat(value);
+  line.price = isNaN(v) ? 0 : v;
+  // Keep the new-product form's price in sync if it's in new mode.
+  if (line.mode === 'new') line.newProduct.price = line.price;
+  renderReceiptReview();
+}
+
+function updateReceiptStore(value) {
+  receiptReviewState.store = value;
+  // Re-render so the bestProductMatch store-bonus could be re-evaluated.
+  // But — we don't want to silently re-match lines the user has already touched.
+  // Just save the value; the user can manually adjust matches if needed.
+}
+
+async function applyReceipt() {
+  const r = receiptReviewState;
+  // Pull latest store value from the input (in case onchange didn't fire)
+  const storeInput = document.getElementById('rcpt-store-input');
+  if (storeInput) r.store = storeInput.value.trim();
+
+  let updatedPrices = 0, unchangedPrices = 0, createdProducts = 0, stockBumped = 0, skipped = 0, ignored = 0;
+  const errors = [];
+
+  for (const line of r.lines) {
+    if (line.mode === 'skip') { line.action = 'skipped'; skipped++; continue; }
+
+    if (line.mode === 'match' && line.productId) {
+      const product = state.products.find(p => p.id === line.productId);
+      if (!product) { line.action = 'skipped'; skipped++; continue; }
+      // Update price (with history) — but don't change product.store per design.
+      if (Math.abs(product.price - line.price) > 0.005) {
+        product.priceHistory = product.priceHistory || [];
+        product.priceHistory.push({ date: r.date, price: line.price, source: 'receipt' });
+        product.price = line.price;
+        updatedPrices++;
+        line.action = 'updated';
+      } else {
+        line.action = 'unchanged';
+        unchangedPrices++;
+      }
+      // If this product has no package size yet (placeholder from seed), fill it from the receipt.
+      // Skip if the product already has real package details — don't overwrite.
+      if ((!product.packageSize || product.packageSize === 0) && line.newProduct.packageSize > 0) {
+        product.packageSize = line.newProduct.packageSize;
+        product.packageUnit = line.newProduct.packageUnit;
+      }
+      // Stock bump: add line.qty packages (defaults to 1)
+      if (line.markReceived) {
+        const bump = line.qty || 1;
+        product.stock = (product.stock || 0) + bump;
+        stockBumped += bump;
+      }
+      // Remember this receipt text → product association for future receipts.
+      const alias = normalizeAlias(line.rawName);
+      if (alias) {
+        if (!product.receiptAliases) product.receiptAliases = [];
+        if (!product.receiptAliases.includes(alias)) {
+          product.receiptAliases.push(alias);
+        }
+      }
+      continue;
+    }
+
+    if (line.mode === 'new') {
+      const np = line.newProduct;
+      // Untouched row (no category picked) — silently ignore, don't create anything.
+      if (!np.categoryId) {
+        line.action = 'ignored';
+        ignored++;
+        continue;
+      }
+      // Category was picked → user intends to create this. Validate the rest.
+      if (!np.name || !np.name.trim()) { errors.push(`Row "${line.rawName}": name required`); continue; }
+      // Create
+      const newId = uid();
+      const initialStock = line.markReceived ? (line.qty || 1) : 0;
+      state.products.push({
+        id: newId,
+        name: np.name.trim(),
+        store: r.store || '',
+        categoryId: np.categoryId,
+        packageSize: np.packageSize || 0,
+        packageUnit: np.packageUnit || 'g',
+        price: line.price || 0,
+        stock: initialStock,
+        conversions: [],
+        priceHistory: line.price > 0 ? [{ date: r.date, price: line.price, source: 'receipt' }] : [],
+        receiptAliases: [normalizeAlias(line.rawName)]
+      });
+      line.productId = newId;
+      line.action = 'created';
+      createdProducts++;
+      if (line.markReceived) stockBumped += initialStock;
+    }
+  }
+
+  if (errors.length) {
+    alert(`Can't apply yet — fix these first:\n\n• ${errors.slice(0, 10).join('\n• ')}${errors.length > 10 ? `\n• …and ${errors.length - 10} more` : ''}`);
+    return;
+  }
+
+  state.receipts.push({
+    id: r.id,
+    date: r.date,
+    store: r.store,
+    total: r.total,
+    lines: r.lines.map(l => ({
+      rawName: l.rawName, qty: l.qty, price: l.price,
+      productId: l.productId, action: l.action,
+      markReceived: l.markReceived || false
+    }))
+  });
+  await saveState();
+  closeModal();
+  receiptReviewState = null;
+  renderCurrent();
+
+  const bits = [];
+  if (updatedPrices) bits.push(`${updatedPrices} price${updatedPrices === 1 ? '' : 's'} updated`);
+  if (unchangedPrices) bits.push(`${unchangedPrices} unchanged`);
+  if (createdProducts) bits.push(`${createdProducts} new product${createdProducts === 1 ? '' : 's'} created`);
+  if (stockBumped) bits.push(`${stockBumped} package${stockBumped === 1 ? '' : 's'} added to stock`);
+  if (skipped) bits.push(`${skipped} skipped`);
+  if (ignored) bits.push(`${ignored} ignored`);
+  setTimeout(() => alert(`Done. ${bits.join(', ') || 'No changes applied.'}.`), 100);
+}
+
+function viewReceipt(id) {
+  const r = state.receipts.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('modal-root').innerHTML = `
+    <div class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <h2>${escapeHtml(r.store || 'Receipt')} · ${r.date}</h2>
+        ${r.total ? `<div class="small" style="margin-bottom: 12px;">Total: <strong>${fmt$(r.total)}</strong></div>` : ''}
+        <table>
+          <thead><tr><th>Item</th><th style="text-align:right;">Price</th><th>Action</th><th>Product</th></tr></thead>
+          <tbody>
+            ${r.lines.map(l => {
+              const p = l.productId ? state.products.find(x => x.id === l.productId) : null;
+              const badgeCls = (l.action === 'updated' || l.action === 'created') ? 'badge-ok' : 'badge-gray';
+              return `<tr>
+                <td>${escapeHtml(l.rawName)}</td>
+                <td style="text-align:right;">${fmt$(l.price)}</td>
+                <td><span class="badge ${badgeCls}">${l.action}</span></td>
+                <td class="small">${p ? escapeHtml(p.name) : '—'}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+        <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+          <button class="btn" onclick="closeModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function deleteReceipt(id) {
+  if (!confirm('Delete this receipt? (Price changes already applied will remain.)')) return;
+  state.receipts = state.receipts.filter(r => r.id !== id);
+  await saveState();
+  renderCurrent();
+}
+
+// ============================================================
+// Utilities
+// ============================================================
+function closeModal() { document.getElementById('modal-root').innerHTML = ''; }
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ============================================================
+// Init
+// ============================================================
+(async function init() {
+  document.getElementById('dashboard-view').innerHTML = '<div class="loading">Loading…</div>';
+  const hadData = await loadState();
+  if (!hadData) {
+    // Fresh install — auto-seed both the starter catalog and the sample recipes (silent).
+    await seedCatalog({ silent: true });
+    await seedRecipes({ silent: true });
+  }
+  renderCurrent();
+})();
+</script>
