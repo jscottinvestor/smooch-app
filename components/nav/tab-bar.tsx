@@ -15,7 +15,7 @@ export function TabBar() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex gap-1 border-b border-border overflow-x-auto">
+    <nav className="flex gap-6 border-b border-border overflow-x-auto">
       {TABS.map((tab) => {
         const active = pathname.startsWith(tab.href);
         return (
@@ -23,9 +23,9 @@ export function TabBar() {
             key={tab.href}
             href={tab.href}
             className={cn(
-              "px-4 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap transition-colors",
+              "py-3 text-sm border-b-2 -mb-px whitespace-nowrap transition-colors",
               active
-                ? "border-foreground text-foreground"
+                ? "border-foreground text-foreground font-medium"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             )}
           >

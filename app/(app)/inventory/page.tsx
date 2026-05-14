@@ -1,11 +1,24 @@
-export default function InventoryPage() {
+import { buildCategoryPaths } from "@/lib/category-paths";
+import { listCategories } from "@/lib/db/categories";
+import { listProducts } from "@/lib/db/products";
+import { seedDatabaseIfEmpty } from "@/lib/seed";
+import { getServerSupabase } from "@/lib/supabase/server";
+import { InventoryView } from "@/components/inventory/inventory-view";
+
+export const dynamic = "force-dynamic";
+
+export default async function InventoryPage() {
+  await seedDatabaseIfEmpty(getServerSupabase());
+  const [categories, products] = await Promise.all([
+    listCategories(),
+    listProducts(),
+  ]);
+  const categoryPaths = buildCategoryPaths(categories);
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-medium">Inventory</h2>
-      <p className="text-sm text-muted-foreground">
-        Coming in Phase 1 — products grouped by DRY / WET / MIX-INS, stock
-        editor, category management.
-      </p>
-    </div>
+    <InventoryView
+      categories={categories}
+      products={products}
+      categoryPaths={categoryPaths}
+    />
   );
 }

@@ -1,11 +1,29 @@
-export default function RecipesPage() {
+import { listCategories } from "@/lib/db/categories";
+import { listProducts } from "@/lib/db/products";
+import { listRecipes } from "@/lib/db/recipes";
+import { seedDatabaseIfEmpty } from "@/lib/seed";
+import { seedRecipesIfEmpty } from "@/lib/seed-recipes";
+import { getServerSupabase } from "@/lib/supabase/server";
+import { RecipesView } from "@/components/recipes/recipes-view";
+
+export const dynamic = "force-dynamic";
+
+export default async function RecipesPage() {
+  const supabase = getServerSupabase();
+  await seedDatabaseIfEmpty(supabase);
+  await seedRecipesIfEmpty(supabase);
+
+  const [recipes, products, categories] = await Promise.all([
+    listRecipes(),
+    listProducts(),
+    listCategories(),
+  ]);
+
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-medium">Recipes</h2>
-      <p className="text-sm text-muted-foreground">
-        Coming in Phase 2 — recipe selector chips, ingredient table, batch
-        multiplier, cost-per-cookie math.
-      </p>
-    </div>
+    <RecipesView
+      recipes={recipes}
+      products={products}
+      categories={categories}
+    />
   );
 }
