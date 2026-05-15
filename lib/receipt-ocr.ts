@@ -63,6 +63,7 @@ Rules:
 - Capture every line-item, even ones with unfamiliar abbreviations.
 - Preserve the original line text verbatim in rawName — do not re-format casing or expand abbreviations. The downstream system uses this exact string as a stable identifier.
 - Skip non-item lines: tax, subtotal, total, cash/card/change/tender/payment, signature, store metadata, cashier names.
-- If a line has a quantity prefix like "2 @ $5.99", set qty=2 and price=the line total (e.g., $11.98).
+- **Consolidate duplicate scans of the same item into one entry.** Many warehouse stores (Costco, Sam's Club, BJ's) list each scan as its own line. If you see the same item name with the same per-unit price appearing two or more times in a row (or anywhere on the receipt), return ONE entry with qty=N (total count) and price=the per-unit price (NOT N × per-unit). Example: three lines of "KS UNSALTED BUTTER 4LB 13.99" → one entry with rawName="KS UNSALTED BUTTER 4LB", qty=3, price=13.99.
+- If a single line itself shows a multiplier like "2 @ $5.99 ... $11.98" or "2  ITEM NAME  11.98", set qty=2 and price=5.99 (the per-unit price, not the line total).
 - For packageSize/packageUnit: only extract if the size is part of the item name (e.g., "KS UNSALTED BUTTER 4LB" → packageSize=4, packageUnit="lb"). Don't guess sizes from product knowledge. Normalize CT/PK/COUNT to "each", LBS to "lb", FLOZ to "fl oz".
 - For dates: receipts use varied formats (MM/DD/YYYY, MM/DD/YY, M-D-YY). Convert to YYYY-MM-DD.`;

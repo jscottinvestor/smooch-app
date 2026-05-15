@@ -367,14 +367,37 @@ export async function parseReceiptImageAction(
     store: parsed.store || "",
     date: parsed.date || new Date().toISOString().slice(0, 10),
     total: parsed.total,
-    items: parsed.items.map((item) => ({
-      rawName: item.rawName,
-      qty: item.qty || 1,
-      price: item.price,
-    })),
+    items: consolidateItems(
+      parsed.items.map((item) => ({
+        rawName: item.rawName,
+        qty: item.qty || 1,
+        price: item.price,
+      }))
+    ),
   };
 
   return { ok: true, parsed: result };
+}
+
+/**
+ * Safety-net dedup. The OCR prompt asks Claude to consolidate, but if it
+ * doesn't, this collapses any remaining same-item duplicates by
+ * (normalized rawName + per-unit price). Sums qty across the merged rows.
+ */
+function consolidateItems(
+  items: ParsedReceipt["items"]
+): ParsedReceipt["items"] {
+  const merged = new Map<string, ParsedReceipt["items"][number]>();
+  for (const item of items) {
+    const key = `${item.rawName.trim().toUpperCase()}|${item.price.toFixed(2)}`;
+    const existing = merged.get(key);
+    if (existing) {
+      existing.qty += item.qty;
+    } else {
+      merged.set(key, { ...item });
+    }
+  }
+  return [...merged.values()];
 }
 
 /**
