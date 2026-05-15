@@ -12,6 +12,7 @@ import type { CategoryPath } from "@/lib/category-paths";
 import { formatMoney, formatQty } from "@/lib/format";
 import type { Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { PriceHistoryDialog } from "./price-history-dialog";
 import { ProductDialog } from "./product-dialog";
 import { StockInput } from "./stock-input";
 
@@ -191,7 +192,7 @@ function ProductRow({
         {p.priceHistory.length === 0 ? (
           <span className="opacity-50">—</span>
         ) : (
-          p.priceHistory.length
+          <PriceHistoryDialog product={p} />
         )}
       </TableCell>
       <TableCell className="text-right pr-4">

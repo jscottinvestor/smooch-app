@@ -1,11 +1,35 @@
-export default function ReceiptsPage() {
+import { buildCategoryPaths } from "@/lib/category-paths";
+import { listCategories } from "@/lib/db/categories";
+import { listProducts } from "@/lib/db/products";
+import { listReceipts } from "@/lib/db/receipts";
+import { seedDatabaseIfEmpty } from "@/lib/seed";
+import { getServerSupabase } from "@/lib/supabase/server";
+import { ReceiptsView } from "@/components/receipts/receipts-view";
+
+export const dynamic = "force-dynamic";
+
+/**
+ * OCR can take 10–30s. Hobby plan caps at 10s; Pro/Team honor this 60s ceiling.
+ */
+export const maxDuration = 60;
+
+export default async function ReceiptsPage() {
+  const supabase = getServerSupabase();
+  await seedDatabaseIfEmpty(supabase);
+
+  const [products, categories, receipts] = await Promise.all([
+    listProducts(),
+    listCategories(),
+    listReceipts(),
+  ]);
+  const categoryPaths = buildCategoryPaths(categories);
+
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-medium">Receipts</h2>
-      <p className="text-sm text-muted-foreground">
-        Coming in Phase 4 — paste-in flow with the bundled sample; Phase 5 adds
-        photo upload and real OCR.
-      </p>
-    </div>
+    <ReceiptsView
+      products={products}
+      categories={categories}
+      categoryPaths={categoryPaths}
+      receipts={receipts}
+    />
   );
 }

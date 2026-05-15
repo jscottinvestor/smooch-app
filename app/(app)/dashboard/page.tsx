@@ -1,11 +1,29 @@
-export default function DashboardPage() {
+import { listCategories } from "@/lib/db/categories";
+import { listProducts } from "@/lib/db/products";
+import { listRecipes } from "@/lib/db/recipes";
+import { seedDatabaseIfEmpty } from "@/lib/seed";
+import { seedRecipesIfEmpty } from "@/lib/seed-recipes";
+import { getServerSupabase } from "@/lib/supabase/server";
+import { DashboardView } from "@/components/dashboard/dashboard-view";
+
+export const dynamic = "force-dynamic";
+
+export default async function DashboardPage() {
+  const supabase = getServerSupabase();
+  await seedDatabaseIfEmpty(supabase);
+  await seedRecipesIfEmpty(supabase);
+
+  const [products, recipes, categories] = await Promise.all([
+    listProducts(),
+    listRecipes(),
+    listCategories(),
+  ]);
+
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-medium">Dashboard</h2>
-      <p className="text-sm text-muted-foreground">
-        Coming in Phase 3 — inventory value, recipe count, out-of-stock count,
-        and per-recipe cost summary.
-      </p>
-    </div>
+    <DashboardView
+      products={products}
+      recipes={recipes}
+      categories={categories}
+    />
   );
 }
