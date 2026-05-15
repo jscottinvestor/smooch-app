@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import {
   applyReceiptAction,
+  saveReceiptForLaterAction,
   type ApplyLineInput,
 } from "@/app/(app)/receipts/actions";
 import type { CategoryPath } from "@/lib/category-paths";
@@ -103,9 +104,8 @@ export function ReceiptReview({
     });
   }
 
-  function onApply() {
-    setError(null);
-    const input = {
+  function buildInput() {
+    return {
       date: state.date,
       store: state.store.trim(),
       total: state.total,
@@ -119,6 +119,11 @@ export function ReceiptReview({
         newProduct: l.newProduct,
       })),
     };
+  }
+
+  function onApply() {
+    setError(null);
+    const input = buildInput();
     startTransition(async () => {
       const res = await applyReceiptAction(input);
       if (res.ok) {
@@ -131,6 +136,23 @@ export function ReceiptReview({
         if (s.skipped) bits.push(`${s.skipped} skipped`);
         if (s.ignored) bits.push(`${s.ignored} ignored`);
         alert("Done. " + bits.join(", ") + ".");
+        onDone();
+        router.refresh();
+      } else {
+        setError(res.error);
+      }
+    });
+  }
+
+  function onSaveForLater() {
+    setError(null);
+    const input = buildInput();
+    startTransition(async () => {
+      const res = await saveReceiptForLaterAction(input);
+      if (res.ok) {
+        alert(
+          "Saved. The receipt's in your history — Reopen it from the list when you're ready to apply."
+        );
         onDone();
         router.refresh();
       } else {
@@ -223,17 +245,26 @@ export function ReceiptReview({
             {error}
           </p>
         )}
-        <div className="flex justify-end gap-2 border-t p-4 bg-card">
+        <div className="flex flex-wrap justify-end gap-2 border-t p-4 bg-card">
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             onClick={onCancel}
             disabled={isPending}
           >
             Cancel
           </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onSaveForLater}
+            disabled={isPending}
+            title="Save the receipt to history without changing any products. You can apply it later from the past-receipts list."
+          >
+            Save for later
+          </Button>
           <Button type="button" onClick={onApply} disabled={isPending}>
-            {isPending ? "Applying…" : "Apply receipt"}
+            {isPending ? "Working…" : "Apply receipt"}
           </Button>
         </div>
       </CardContent>

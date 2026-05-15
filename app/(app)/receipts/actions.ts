@@ -377,6 +377,41 @@ export async function parseReceiptImageAction(
   return { ok: true, parsed: result };
 }
 
+/**
+ * Save the receipt to history without changing any product data. All lines
+ * are stored with action='skipped' so a later Reopen knows nothing has been
+ * applied yet and can offer to bump stock for the first time.
+ */
+export async function saveReceiptForLaterAction(
+  input: ApplyReceiptInput
+): Promise<ActionResult> {
+  try {
+    const receiptLines: ReceiptLine[] = input.lines.map((line) => ({
+      rawName: line.rawName,
+      qty: line.qty,
+      price: line.price,
+      productId: null,
+      action: "skipped" as const,
+      markReceived: false,
+    }));
+
+    await insertReceipt({
+      date: input.date,
+      store: input.store.trim(),
+      total: input.total,
+      lines: receiptLines,
+    });
+
+    revalidatePath("/receipts");
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "Save failed",
+    };
+  }
+}
+
 export async function deleteReceiptAction(id: string): Promise<ActionResult> {
   try {
     await deleteReceipt(id);
