@@ -24,7 +24,8 @@ export async function listReceipts(): Promise<Receipt[]> {
   const { data, error } = await supabase
     .from("receipts")
     .select("*")
-    .order("date", { ascending: false });
+    .order("date", { ascending: false })
+    .order("created_at", { ascending: false });
   if (error) throw new Error(`listReceipts: ${error.message}`);
   return (data as ReceiptRow[]).map(receiptFromRow);
 }
