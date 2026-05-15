@@ -121,16 +121,20 @@ export async function applyReceiptAction(
         continue;
       }
 
-      const priceChanged = Math.abs(product.price - line.price) > 0.005;
+      // line.price is the line total (N × per-unit). Convert to per-unit
+      // before comparing to or storing in product.price (which is $/package).
+      const qty = line.qty > 0 ? line.qty : 1;
+      const unitPrice = line.price / qty;
+      const priceChanged = Math.abs(product.price - unitPrice) > 0.005;
       let action: ReceiptLineAction = "unchanged";
       const updates: Record<string, unknown> = {};
 
       if (priceChanged) {
         const newHistory: PriceHistoryEntry[] = [
           ...product.priceHistory,
-          { date: input.date, price: line.price, source: "receipt" },
+          { date: input.date, price: unitPrice, source: "receipt" },
         ];
-        updates.price = line.price;
+        updates.price = unitPrice;
         updates.price_history = newHistory;
         summary.updated += 1;
         action = "updated";
@@ -209,9 +213,12 @@ export async function applyReceiptAction(
       }
 
       const initialStock = line.markReceived ? line.qty || 1 : 0;
+      // line.price is the line total; product.price is $/package, so divide.
+      const qty = line.qty > 0 ? line.qty : 1;
+      const unitPrice = line.price > 0 ? line.price / qty : 0;
       const priceHistory: PriceHistoryEntry[] =
-        line.price > 0
-          ? [{ date: input.date, price: line.price, source: "receipt" }]
+        unitPrice > 0
+          ? [{ date: input.date, price: unitPrice, source: "receipt" }]
           : [];
       const alias = normalizeAlias(line.rawName);
 
@@ -223,7 +230,7 @@ export async function applyReceiptAction(
           category_id: np.categoryId,
           package_size: np.packageSize || 0,
           package_unit: np.packageUnit || "g",
-          price: line.price || 0,
+          price: unitPrice,
           stock: initialStock,
           conversions: [],
           price_history: priceHistory,
@@ -381,18 +388,22 @@ export async function parseReceiptImageAction(
 
 /**
  * Safety-net dedup. The OCR prompt asks Claude to consolidate, but if it
- * doesn't, this collapses any remaining same-item duplicates by
- * (normalized rawName + per-unit price). Sums qty across the merged rows.
+ * doesn't, this collapses any remaining same-item duplicates. Keys on
+ * (normalized rawName + per-unit price) so partial consolidations still
+ * merge. Sums both qty and price across merged rows so `price` stays the
+ * line total.
  */
 function consolidateItems(
   items: ParsedReceipt["items"]
 ): ParsedReceipt["items"] {
   const merged = new Map<string, ParsedReceipt["items"][number]>();
   for (const item of items) {
-    const key = `${item.rawName.trim().toUpperCase()}|${item.price.toFixed(2)}`;
+    const unit = item.qty > 0 ? item.price / item.qty : item.price;
+    const key = `${item.rawName.trim().toUpperCase()}|${unit.toFixed(4)}`;
     const existing = merged.get(key);
     if (existing) {
       existing.qty += item.qty;
+      existing.price += item.price;
     } else {
       merged.set(key, { ...item });
     }

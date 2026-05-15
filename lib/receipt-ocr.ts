@@ -16,7 +16,7 @@ export const ReceiptItemSchema = z.object({
     .describe(
       "quantity of this item. If the receipt doesn't show a quantity, use 1."
     ),
-  price: z.number().describe("the line price in dollars (the final amount paid for this line, not unit price)"),
+  price: z.number().describe("the total amount paid for this line in dollars. For qty>1 this is N × per-unit price (the line total on the receipt, NOT the per-unit price)."),
   packageSize: z
     .number()
     .nullable()
@@ -63,7 +63,8 @@ Rules:
 - Capture every line-item, even ones with unfamiliar abbreviations.
 - Preserve the original line text verbatim in rawName — do not re-format casing or expand abbreviations. The downstream system uses this exact string as a stable identifier.
 - Skip non-item lines: tax, subtotal, total, cash/card/change/tender/payment, signature, store metadata, cashier names.
-- **Consolidate duplicate scans of the same item into one entry.** Many warehouse stores (Costco, Sam's Club, BJ's) list each scan as its own line. If you see the same item name with the same per-unit price appearing two or more times in a row (or anywhere on the receipt), return ONE entry with qty=N (total count) and price=the per-unit price (NOT N × per-unit). Example: three lines of "KS UNSALTED BUTTER 4LB 13.99" → one entry with rawName="KS UNSALTED BUTTER 4LB", qty=3, price=13.99.
-- If a single line itself shows a multiplier like "2 @ $5.99 ... $11.98" or "2  ITEM NAME  11.98", set qty=2 and price=5.99 (the per-unit price, not the line total).
+- **Consolidate duplicate scans of the same item into one entry.** Many warehouse stores (Costco, Sam's Club, BJ's) list each scan as its own line. If you see the same item name with the same per-unit price appearing two or more times in a row (or anywhere on the receipt), return ONE entry with qty=N (total count) and price=the SUM (N × per-unit). Example: three lines of "KS UNSALTED BUTTER 4LB 13.99" → one entry with rawName="KS UNSALTED BUTTER 4LB", qty=3, price=41.97.
+- If a single line itself shows a multiplier like "2 @ $5.99 ... $11.98" or "2  ITEM NAME  11.98", set qty=2 and price=11.98 (the line total, NOT the per-unit price).
+- The price field is always the total for that line. The downstream system divides by qty to derive the per-unit price.
 - For packageSize/packageUnit: only extract if the size is part of the item name (e.g., "KS UNSALTED BUTTER 4LB" → packageSize=4, packageUnit="lb"). Don't guess sizes from product knowledge. Normalize CT/PK/COUNT to "each", LBS to "lb", FLOZ to "fl oz".
 - For dates: receipts use varied formats (MM/DD/YYYY, MM/DD/YY, M-D-YY). Convert to YYYY-MM-DD.`;

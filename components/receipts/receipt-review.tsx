@@ -290,7 +290,9 @@ function ReviewRow({
   const matched = line.productId
     ? products.find((p) => p.id === line.productId)
     : null;
-  const priceDelta = matched ? line.price - matched.price : 0;
+  const qty = line.qty > 0 ? line.qty : 1;
+  const lineUnitPrice = line.price / qty;
+  const unitPriceDelta = matched ? lineUnitPrice - matched.price : 0;
 
   const willBeIgnored = line.mode === "new" && !line.newProduct.categoryId;
 
@@ -340,19 +342,24 @@ function ReviewRow({
           </div>
           <div className="text-[11px] text-muted-foreground mt-0.5">
             qty {line.qty}
+            {qty > 1 && (
+              <span className="ml-1">
+                ({formatMoney(lineUnitPrice)}/pkg)
+              </span>
+            )}
             {matched && (
               <>
                 {" · was "}
-                {formatMoney(matched.price)}
-                {priceDelta !== 0 && (
+                {formatMoney(matched.price)}/pkg
+                {Math.abs(unitPriceDelta) > 0.005 && (
                   <span
                     className={cn(
                       "ml-1 font-medium",
-                      priceDelta > 0 ? "text-red-700" : "text-emerald-700"
+                      unitPriceDelta > 0 ? "text-red-700" : "text-emerald-700"
                     )}
                   >
-                    {priceDelta > 0 ? "+" : ""}
-                    {formatMoney(priceDelta)}
+                    {unitPriceDelta > 0 ? "+" : ""}
+                    {formatMoney(unitPriceDelta)}/pkg
                   </span>
                 )}
               </>
