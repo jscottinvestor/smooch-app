@@ -97,6 +97,7 @@ export function ReceiptsView({
       date: receipt.date,
       total: receipt.total,
       lines,
+      existingReceiptId: receipt.id,
     });
   }
 

@@ -50,6 +50,28 @@ export async function insertReceipt(input: {
   return data.id as string;
 }
 
+export async function updateReceipt(
+  id: string,
+  input: {
+    date: string;
+    store: string;
+    total: number | null;
+    lines: ReceiptLine[];
+  }
+): Promise<void> {
+  const supabase = getServerSupabase();
+  const { error } = await supabase
+    .from("receipts")
+    .update({
+      date: input.date,
+      store: input.store,
+      total: input.total,
+      lines: input.lines,
+    })
+    .eq("id", id);
+  if (error) throw new Error(`updateReceipt: ${error.message}`);
+}
+
 export async function deleteReceipt(id: string): Promise<void> {
   const supabase = getServerSupabase();
   const { error } = await supabase.from("receipts").delete().eq("id", id);

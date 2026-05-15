@@ -4,7 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { revalidatePath } from "next/cache";
 import { productFromRow, type ProductRow } from "@/lib/db/mappers";
-import { deleteReceipt, insertReceipt } from "@/lib/db/receipts";
+import { deleteReceipt, insertReceipt, updateReceipt } from "@/lib/db/receipts";
 import { normalizeAlias } from "@/lib/matching";
 import {
   OCR_SYSTEM_PROMPT,
@@ -41,6 +41,8 @@ export interface ApplyReceiptInput {
   store: string;
   total: number | null;
   lines: ApplyLineInput[];
+  /** If set, update this existing receipt row instead of inserting a new one. */
+  existingReceiptId?: string | null;
 }
 
 export interface ApplyReceiptSummary {
@@ -130,14 +132,31 @@ export async function applyReceiptAction(
       const updates: Record<string, unknown> = {};
 
       if (priceChanged) {
+        // Decide whether this receipt's date is at-or-after the most recent
+        // price-history entry. If older, we still record the historical data
+        // point in priceHistory, but we DO NOT overwrite the current
+        // product.price (which represents the latest known price).
+        const latestHistoryDate = product.priceHistory.reduce<string | null>(
+          (max, e) => (max === null || e.date > max ? e.date : max),
+          null
+        );
+        const receiptIsNewest =
+          latestHistoryDate === null || input.date >= latestHistoryDate;
+
         const newHistory: PriceHistoryEntry[] = [
           ...product.priceHistory,
           { date: input.date, price: unitPrice, source: "receipt" },
         ];
-        updates.price = unitPrice;
         updates.price_history = newHistory;
-        summary.updated += 1;
-        action = "updated";
+
+        if (receiptIsNewest) {
+          updates.price = unitPrice;
+          summary.updated += 1;
+          action = "updated";
+        } else {
+          // Recorded as a historical price; current price stays as-is.
+          summary.unchanged += 1;
+        }
       } else {
         summary.unchanged += 1;
       }
@@ -258,14 +277,23 @@ export async function applyReceiptAction(
     }
   }
 
-  // Insert receipt row
+  // Insert receipt row (or update the existing one if this was a reopen)
   try {
-    await insertReceipt({
-      date: input.date,
-      store: input.store,
-      total: input.total,
-      lines: receiptLines,
-    });
+    if (input.existingReceiptId) {
+      await updateReceipt(input.existingReceiptId, {
+        date: input.date,
+        store: input.store,
+        total: input.total,
+        lines: receiptLines,
+      });
+    } else {
+      await insertReceipt({
+        date: input.date,
+        store: input.store,
+        total: input.total,
+        lines: receiptLines,
+      });
+    }
   } catch (e) {
     return {
       ok: false,
@@ -429,12 +457,21 @@ export async function saveReceiptForLaterAction(
       markReceived: false,
     }));
 
-    await insertReceipt({
-      date: input.date,
-      store: input.store.trim(),
-      total: input.total,
-      lines: receiptLines,
-    });
+    if (input.existingReceiptId) {
+      await updateReceipt(input.existingReceiptId, {
+        date: input.date,
+        store: input.store.trim(),
+        total: input.total,
+        lines: receiptLines,
+      });
+    } else {
+      await insertReceipt({
+        date: input.date,
+        store: input.store.trim(),
+        total: input.total,
+        lines: receiptLines,
+      });
+    }
 
     revalidatePath("/receipts");
     return { ok: true };

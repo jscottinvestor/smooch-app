@@ -51,6 +51,11 @@ export interface ReviewState {
   date: string;
   total: number | null;
   lines: ReviewLine[];
+  /**
+   * If this review is editing an existing receipt (reopened from history),
+   * apply/save will update that row instead of inserting a new one.
+   */
+  existingReceiptId?: string | null;
 }
 
 export function ReceiptReview({
@@ -109,6 +114,7 @@ export function ReceiptReview({
       date: state.date,
       store: state.store.trim(),
       total: state.total,
+      existingReceiptId: state.existingReceiptId ?? null,
       lines: state.lines.map<ApplyLineInput>((l) => ({
         rawName: l.rawName,
         qty: l.qty,
