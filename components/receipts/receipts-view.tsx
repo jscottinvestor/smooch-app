@@ -60,6 +60,46 @@ export function ReceiptsView({
     });
   }
 
+  function onReopen(receipt: Receipt) {
+    const lines: ReviewLine[] = receipt.lines.map((line) => {
+      const { product, score } = bestProductMatch(
+        line.rawName,
+        receipt.store,
+        products
+      );
+      const isMatch = classifyMatch(score) !== "none" && product !== null;
+      const pkg = extractPackageInfo(line.rawName);
+      const fallbackSize = pkg.packageSize > 0 ? pkg.packageSize : line.qty || 1;
+      // Don't double-bump stock for lines that already applied successfully.
+      const alreadyApplied =
+        line.action === "created" ||
+        line.action === "updated" ||
+        line.action === "unchanged";
+      return {
+        id: crypto.randomUUID(),
+        rawName: line.rawName,
+        qty: line.qty,
+        price: line.price,
+        score,
+        mode: isMatch ? "match" : "new",
+        productId: isMatch ? product!.id : null,
+        markReceived: !alreadyApplied,
+        newProduct: {
+          name: pkg.cleanName ? toTitleCase(pkg.cleanName) : line.rawName,
+          categoryId: null,
+          packageSize: fallbackSize,
+          packageUnit: pkg.packageUnit,
+        },
+      };
+    });
+    setReview({
+      store: receipt.store,
+      date: receipt.date,
+      total: receipt.total,
+      lines,
+    });
+  }
+
   if (review) {
     return (
       <ReceiptReview
@@ -87,7 +127,11 @@ export function ReceiptsView({
           onParsed(parsed);
         }}
       />
-      <ReceiptHistory receipts={receipts} products={products} />
+      <ReceiptHistory
+        receipts={receipts}
+        products={products}
+        onReopen={onReopen}
+      />
     </div>
   );
 }

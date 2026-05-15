@@ -13,7 +13,8 @@ export function ReceiptInput({
 }: {
   onParsed: (parsed: ParsedReceipt) => void;
 }) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const libraryInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<{
     dataUrl: string;
     base64: string;
@@ -47,7 +48,8 @@ export function ReceiptInput({
   function clearPreview() {
     setPreview(null);
     setError(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
+    if (libraryInputRef.current) libraryInputRef.current.value = "";
   }
 
   function parse() {
@@ -79,10 +81,20 @@ export function ReceiptInput({
       </CardHeader>
       <CardContent className="space-y-4">
         <input
-          ref={fileInputRef}
+          ref={cameraInputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp,image/gif"
           capture="environment"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) onFile(f);
+          }}
+        />
+        <input
+          ref={libraryInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
           className="hidden"
           onChange={(e) => {
             const f = e.target.files?.[0];
@@ -96,24 +108,19 @@ export function ReceiptInput({
               type="button"
               variant="outline"
               className="h-24 flex-col gap-2"
-              onClick={() => {
-                if (!fileInputRef.current) return;
-                fileInputRef.current.setAttribute("capture", "environment");
-                fileInputRef.current.click();
-              }}
+              onClick={() => cameraInputRef.current?.click()}
             >
               <Camera className="w-5 h-5" />
               <span className="text-sm font-medium">Take a photo</span>
+              <span className="text-[10px] text-muted-foreground -mt-1">
+                Mobile only
+              </span>
             </Button>
             <Button
               type="button"
               variant="outline"
               className="h-24 flex-col gap-2"
-              onClick={() => {
-                if (!fileInputRef.current) return;
-                fileInputRef.current.removeAttribute("capture");
-                fileInputRef.current.click();
-              }}
+              onClick={() => libraryInputRef.current?.click()}
             >
               <ImageIcon className="w-5 h-5" />
               <span className="text-sm font-medium">Pick from photos</span>

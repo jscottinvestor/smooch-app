@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronRight, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, RotateCcw, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,11 @@ import { cn } from "@/lib/utils";
 export function ReceiptHistory({
   receipts,
   products,
+  onReopen,
 }: {
   receipts: Receipt[];
   products: Product[];
+  onReopen: (receipt: Receipt) => void;
 }) {
   if (receipts.length === 0) {
     return null;
@@ -38,7 +40,12 @@ export function ReceiptHistory({
       <CardContent className="p-0 border-t">
         <div className="divide-y">
           {receipts.map((r) => (
-            <ReceiptRow key={r.id} receipt={r} products={products} />
+            <ReceiptRow
+              key={r.id}
+              receipt={r}
+              products={products}
+              onReopen={onReopen}
+            />
           ))}
         </div>
       </CardContent>
@@ -49,9 +56,11 @@ export function ReceiptHistory({
 function ReceiptRow({
   receipt,
   products,
+  onReopen,
 }: {
   receipt: Receipt;
   products: Product[];
+  onReopen: (receipt: Receipt) => void;
 }) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
@@ -135,17 +144,30 @@ function ReceiptRow({
             </Button>
           </>
         ) : (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            onClick={() => setConfirming(true)}
-            title="Delete receipt"
-            className="text-muted-foreground hover:text-destructive"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span className="sr-only">Delete</span>
-          </Button>
+          <>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              onClick={() => onReopen(receipt)}
+              title="Reopen this receipt in the review screen"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span className="sr-only">Reopen</span>
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              onClick={() => setConfirming(true)}
+              title="Delete receipt"
+              className="text-muted-foreground hover:text-destructive"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span className="sr-only">Delete</span>
+            </Button>
+          </>
         )}
       </div>
 
