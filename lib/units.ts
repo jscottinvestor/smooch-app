@@ -109,9 +109,25 @@ export function convertQuantity(
         }
       }
       if (toFromDim === toDim) {
-        const flipped = (qty * c.fromQty) / c.toQty;
-        const intermediate = convertQuantity(flipped, c.fromUnit, toUnit, null);
-        if (intermediate !== null) return intermediate;
+        // c.fromUnit is in toUnit's dimension. To use this conversion in
+        // reverse, fromUnit must be in c.toUnit's dimension so we can:
+        //   fromUnit -> c.toUnit -> (× fromQty/toQty) -> c.fromUnit -> toUnit
+        // The previous code skipped the fromUnit -> c.toUnit conversion and
+        // mis-treated qty as if it were already in c.toUnit.
+        const toToDim = unitDimension(c.toUnit);
+        if (toToDim === fromDim) {
+          const inCtoUnit = convertQuantity(qty, fromUnit, c.toUnit, null);
+          if (inCtoUnit !== null) {
+            const inCfromUnit = (inCtoUnit * c.fromQty) / c.toQty;
+            const final = convertQuantity(
+              inCfromUnit,
+              c.fromUnit,
+              toUnit,
+              null
+            );
+            if (final !== null) return final;
+          }
+        }
       }
     }
   }

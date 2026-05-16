@@ -70,4 +70,21 @@ describe("convertQuantity", () => {
       })
     ).toBeCloseTo(240);
   });
+
+  it("reverses a {weight, volume} conversion across dimensions", () => {
+    // 16 oz of corn starch = 45 tbsp. Ask: 2 tsp → oz.
+    // Path: 2 tsp → 0.667 tbsp (built-in volume) → (× 16/45) → 0.237 oz.
+    const cornStarch = {
+      name: "Corn Starch",
+      conversions: [
+        { fromQty: 16, fromUnit: "oz", toQty: 45, toUnit: "tbsp" },
+      ] as const,
+    };
+    const ozs = convertQuantity(2, "tsp", "oz", {
+      name: cornStarch.name,
+      conversions: [...cornStarch.conversions],
+    });
+    expect(ozs).not.toBeNull();
+    expect(ozs!).toBeCloseTo((2 / 3) * (16 / 45), 4);
+  });
 });
