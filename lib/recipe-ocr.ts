@@ -35,7 +35,7 @@ export const RecipeOcrSchema = z.object({
     .number()
     .nullable()
     .describe(
-      "the recipe yield — how many finished items the recipe makes. Look for phrases like 'Makes X', 'Yields X', 'Serves X', 'X cookies', 'X muffins', 'X servings'. If a range is given (e.g. 'Makes 24-30 cookies'), use the lower number. Null if no yield is stated."
+      "the recipe yield — how many finished items the recipe makes. Look for phrases like 'Makes X', 'Yields X', 'Serves X', 'X items', 'X muffins', 'X servings'. If a range is given (e.g. 'Makes 24-30'), use the lower number. Null if no yield is stated."
     ),
   ingredients: z.array(RecipeIngredientSchema),
 });

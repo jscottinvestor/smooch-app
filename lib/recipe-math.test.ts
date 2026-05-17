@@ -77,7 +77,7 @@ describe("maxBatches", () => {
       id: "r1",
       name: "Test",
       batches: 1,
-      cookiesPerBatch: 10,
+      itemsPerBatch: 10,
       ingredients: [
         ing({
           id: "a",
@@ -105,7 +105,7 @@ describe("maxBatches", () => {
       id: "r2",
       name: "Test",
       batches: 1,
-      cookiesPerBatch: 10,
+      itemsPerBatch: 10,
       ingredients: [ing({ quantity: 100 })], // productId: null
     };
     expect(maxBatches(recipe, [sugar]).batches).toBe(0);
@@ -118,7 +118,7 @@ describe("recipeCost", () => {
       id: "r3",
       name: "Test",
       batches: 1,
-      cookiesPerBatch: 10,
+      itemsPerBatch: 10,
       ingredients: [
         ing({
           id: "a",

@@ -142,7 +142,7 @@ export function BakeDialog({
                         {r.name}
                       </div>
                       <div className="text-[11px] text-muted-foreground">
-                        {formatQty(r.cookiesPerBatch)} products/batch
+                        {formatQty(r.itemsPerBatch)} products/batch
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">

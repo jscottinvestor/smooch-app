@@ -14,7 +14,7 @@ interface SeedIngredient {
 interface SeedRecipe {
   name: string;
   batches: number;
-  cookiesPerBatch: number;
+  itemsPerBatch: number;
   ingredients: SeedIngredient[];
 }
 
@@ -27,7 +27,7 @@ const _UNUSED_RECIPES: SeedRecipe[] = [
   {
     name: "Chunky Chocolate Chip",
     batches: 1,
-    cookiesPerBatch: 12.5,
+    itemsPerBatch: 12.5,
     ingredients: [
       { name: "Unsalted Butter", quantity: 2, unit: "sticks", productName: "Unsalted Butter", categoryName: "Butter" },
       { name: "Eggs", quantity: 1, unit: "each", categoryName: "Eggs" },
@@ -48,7 +48,7 @@ const _UNUSED_RECIPES: SeedRecipe[] = [
   {
     name: "Double Brownie Blast",
     batches: 1,
-    cookiesPerBatch: 10,
+    itemsPerBatch: 10,
     ingredients: [
       { name: "Unsalted Butter", quantity: 1, unit: "sticks", productName: "Unsalted Butter", categoryName: "Butter" },
       { name: "Eggs", quantity: 1, unit: "each", categoryName: "Eggs" },
@@ -100,7 +100,7 @@ export async function seedRecipesIfEmpty(
   const inserts = SEED_RECIPES.map((r) => ({
     name: r.name,
     batches: r.batches,
-    cookies_per_batch: r.cookiesPerBatch,
+    cookies_per_batch: r.itemsPerBatch,
     ingredients: r.ingredients.map((ing) => ({
       id: crypto.randomUUID(),
       name: ing.name,

@@ -128,7 +128,7 @@ export function ShoppingListDialog({
                         {r.name}
                       </div>
                       <div className="text-[11px] text-muted-foreground">
-                        saved: {r.batches} × {formatQty(r.cookiesPerBatch)}{" "}
+                        saved: {r.batches} × {formatQty(r.itemsPerBatch)}{" "}
                         products/batch
                       </div>
                     </div>

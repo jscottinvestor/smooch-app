@@ -124,8 +124,8 @@ export function RecipeDialog({
 
   const [name, setName] = useState(recipe?.name ?? "");
   const [batches, setBatches] = useState(String(recipe?.batches ?? 1));
-  const [cookiesPerBatch, setCookiesPerBatch] = useState(
-    String(recipe?.cookiesPerBatch ?? 12)
+  const [itemsPerBatch, setItemsPerBatch] = useState(
+    String(recipe?.itemsPerBatch ?? 12)
   );
   const [drafts, setDrafts] = useState<DraftIngredient[]>(
     recipe ? recipe.ingredients.map(ingToDraft) : []
@@ -187,7 +187,7 @@ export function RecipeDialog({
       const { name: parsedName, productsPerBatch, ingredients } = res.parsed;
       if (parsedName) setName(parsedName);
       if (productsPerBatch !== null && productsPerBatch > 0) {
-        setCookiesPerBatch(String(productsPerBatch));
+        setItemsPerBatch(String(productsPerBatch));
       }
       // Auto-pick an existing product for each ingredient when we have a
       // confident name match. Recipe ingredient names are typically clean
@@ -226,12 +226,12 @@ export function RecipeDialog({
     if (recipe) {
       setName(recipe.name);
       setBatches(String(recipe.batches));
-      setCookiesPerBatch(String(recipe.cookiesPerBatch));
+      setItemsPerBatch(String(recipe.itemsPerBatch));
       setDrafts(recipe.ingredients.map(ingToDraft));
     } else {
       setName("");
       setBatches("1");
-      setCookiesPerBatch("12");
+      setItemsPerBatch("12");
       setDrafts([]);
     }
     setError(null);
@@ -271,7 +271,7 @@ export function RecipeDialog({
     const input = {
       name: name.trim(),
       batches: parseInt(batches, 10) || 1,
-      cookiesPerBatch: parseFloat(cookiesPerBatch) || 1,
+      itemsPerBatch: parseFloat(itemsPerBatch) || 1,
       ingredients,
     };
 
@@ -367,8 +367,8 @@ export function RecipeDialog({
                   type="number"
                   min="0.5"
                   step="0.5"
-                  value={cookiesPerBatch}
-                  onChange={(e) => setCookiesPerBatch(e.target.value)}
+                  value={itemsPerBatch}
+                  onChange={(e) => setItemsPerBatch(e.target.value)}
                 />
               </div>
             </div>

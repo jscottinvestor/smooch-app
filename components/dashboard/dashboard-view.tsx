@@ -140,8 +140,8 @@ function RecipeSummary({
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((r) => {
       const { total, missing } = recipeCost(r, products);
-      const cookies = (r.batches || 1) * (r.cookiesPerBatch || 1);
-      const costPerCookie = cookies > 0 ? total / cookies : 0;
+      const items = (r.batches || 1) * (r.itemsPerBatch || 1);
+      const costPerItem = items > 0 ? total / items : 0;
       const { batches: batchesPossible, limitingIngredient } = maxBatches(
         r,
         products
@@ -150,7 +150,7 @@ function RecipeSummary({
       return {
         recipe: r,
         costPerBatch: total,
-        costPerCookie,
+        costPerItem,
         batchesPossible,
         limitingIngredient,
         allKnown,
@@ -191,7 +191,7 @@ function RecipeSummary({
                       {s.recipe.name}
                     </Link>
                     <div className="text-xs text-muted-foreground mt-0.5">
-                      {s.recipe.batches || 1} batch × {s.recipe.cookiesPerBatch}{" "}
+                      {s.recipe.batches || 1} batch × {s.recipe.itemsPerBatch}{" "}
                       products
                     </div>
                   </td>
@@ -208,10 +208,10 @@ function RecipeSummary({
                     )}
                   </td>
                   <td className="text-right py-3 tabular-nums">
-                    {s.costPerCookie > 0 ? (
+                    {s.costPerItem > 0 ? (
                       <span>
                         {s.allKnown ? "" : "~"}
-                        {formatMoney(s.costPerCookie, 4)}
+                        {formatMoney(s.costPerItem, 4)}
                       </span>
                     ) : (
                       <span className="text-muted-foreground italic text-xs">
@@ -265,7 +265,7 @@ function RecipeSummary({
                   {s.recipe.name}
                 </Link>
                 <div className="text-xs text-muted-foreground">
-                  {s.recipe.batches || 1} batch × {s.recipe.cookiesPerBatch}{" "}
+                  {s.recipe.batches || 1} batch × {s.recipe.itemsPerBatch}{" "}
                   products
                 </div>
               </div>
@@ -282,8 +282,8 @@ function RecipeSummary({
                   Cost / product
                 </span>
                 <span className="text-right font-medium tabular-nums">
-                  {s.costPerCookie > 0
-                    ? `${s.allKnown ? "" : "~"}${formatMoney(s.costPerCookie, 4)}`
+                  {s.costPerItem > 0
+                    ? `${s.allKnown ? "" : "~"}${formatMoney(s.costPerItem, 4)}`
                     : <span className="italic text-muted-foreground text-xs">—</span>}
                 </span>
                 <span className="text-muted-foreground text-xs">

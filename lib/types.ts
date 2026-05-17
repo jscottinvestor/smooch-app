@@ -69,7 +69,7 @@ export interface Recipe {
   id: string;
   name: string;
   batches: number;
-  cookiesPerBatch: number;
+  itemsPerBatch: number;
   ingredients: Ingredient[];
 }
 

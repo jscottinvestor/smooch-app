@@ -1,6 +1,5 @@
 import {
   Camera,
-  Cookie,
   PackageOpen,
   ShoppingCart,
   Sparkles,
@@ -90,8 +89,8 @@ export default async function HomePage({
           <Feature
             icon={Wallet}
             tint="bg-emerald-100 text-emerald-700"
-            title="Know exactly what each product costs"
-            body="Link every recipe ingredient to a product in your pantry and the app does the math: cost per batch, cost per cookie, and your margin on every tray. Price with confidence instead of guessing."
+            title="Calculate Your Product Costs"
+            body="Link every recipe ingredient to a product in your pantry and the app does the math: cost per batch, cost per item, and your margin on every tray. Price with confidence instead of guessing."
           />
           <Feature
             icon={PackageOpen}

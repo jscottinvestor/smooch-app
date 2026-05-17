@@ -70,8 +70,8 @@ function validateRecipe(input: NewRecipeInput): string | null {
   if (!Number.isFinite(input.batches) || input.batches < 1) {
     return "Batches must be 1 or more";
   }
-  if (!Number.isFinite(input.cookiesPerBatch) || input.cookiesPerBatch <= 0) {
-    return "Cookies per batch must be greater than zero";
+  if (!Number.isFinite(input.itemsPerBatch) || input.itemsPerBatch <= 0) {
+    return "Items per batch must be greater than zero";
   }
   return null;
 }

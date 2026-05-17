@@ -1,5 +1,5 @@
 import {
-  Cookie,
+  Candy,
   Droplets,
   FolderTree,
   Plus,
@@ -34,7 +34,7 @@ const TOP_META: Record<
     cardBg: "bg-sky-50/40",
   },
   "MIX-INS": {
-    Icon: Cookie,
+    Icon: Candy,
     tint: "bg-rose-100 text-rose-700",
     cardBg: "bg-rose-50/40",
   },

@@ -47,7 +47,7 @@ export function RecipeCard({
     parseFloat(batchesDraft) > 0 ? parseFloat(batchesDraft) : savedBatches;
   const batchScale = effectiveBatches / savedBatches;
   const isMultiplied = effectiveBatches !== savedBatches;
-  const totalCookies = effectiveBatches * (recipe.cookiesPerBatch || 1);
+  const totalItems = effectiveBatches * (recipe.itemsPerBatch || 1);
 
   // Compute per-line costs with the batch scale applied.
   const lines = recipe.ingredients.map((ing) =>
@@ -60,7 +60,7 @@ export function RecipeCard({
   const someKnown = knownCosts.length > 0 && !allKnown;
   const noneKnown = knownCosts.length === 0;
 
-  const costPerCookie = totalCookies > 0 ? total / totalCookies : 0;
+  const costPerItem = totalItems > 0 ? total / totalItems : 0;
   const { batches: batchesPossible, limitingIngredient } = maxBatches(
     recipe,
     products
@@ -126,7 +126,7 @@ export function RecipeCard({
           </h2>
           <div className="flex items-center gap-3 shrink-0">
             <span className="text-xs text-muted-foreground tabular-nums">
-              {formatQty(savedBatches)} × {formatQty(recipe.cookiesPerBatch)}{" "}
+              {formatQty(savedBatches)} × {formatQty(recipe.itemsPerBatch)}{" "}
               products/batch
             </span>
             <RecipeDialog
@@ -159,7 +159,7 @@ export function RecipeCard({
               className="h-7 w-16 text-right text-sm tabular-nums"
             />
             <span className="text-muted-foreground">
-              batches → {formatQty(totalCookies)} products
+              batches → {formatQty(totalItems)} products
             </span>
             {isMultiplied && (
               <button
@@ -294,8 +294,8 @@ export function RecipeCard({
                 </td>
                 <td className="text-right py-2 font-medium tabular-nums">
                   {allKnown
-                    ? formatMoney(costPerCookie, 4)
-                    : "~" + formatMoney(costPerCookie, 4)}
+                    ? formatMoney(costPerItem, 4)
+                    : "~" + formatMoney(costPerItem, 4)}
                 </td>
                 <td />
               </tr>
@@ -369,8 +369,8 @@ export function RecipeCard({
               <span className="text-muted-foreground">Cost per product</span>
               <span className="font-medium tabular-nums">
                 {allKnown
-                  ? formatMoney(costPerCookie, 4)
-                  : "~" + formatMoney(costPerCookie, 4)}
+                  ? formatMoney(costPerItem, 4)
+                  : "~" + formatMoney(costPerItem, 4)}
               </span>
             </div>
             <div className="flex justify-between">

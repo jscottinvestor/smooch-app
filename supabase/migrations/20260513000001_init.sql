@@ -1,4 +1,4 @@
--- Initial schema for the Cookie Business App.
+-- Initial schema for the Baking Buddy app.
 -- Single-user app gated by a shared password in Next.js middleware.
 -- RLS intentionally left disabled; the URL gate is the access control.
 
@@ -51,7 +51,9 @@ create table recipes (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   batches integer not null default 1,
-  -- Fractional allowed (e.g., 12.5 cookies/batch)
+  -- Fractional allowed (e.g., 12.5 items/batch).
+  -- Mapped to `itemsPerBatch` on the TS side — the column name is
+  -- kept for historical reasons; renaming it would require a migration.
   cookies_per_batch numeric not null default 1,
   -- Array of Ingredient objects (see lib/types.ts)
   ingredients jsonb not null default '[]'::jsonb,
