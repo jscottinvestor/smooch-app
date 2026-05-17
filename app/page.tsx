@@ -97,25 +97,25 @@ export default async function HomePage({
             icon={PackageOpen}
             tint="bg-amber-100 text-amber-700"
             title="Inventory that monitors itself"
-            body="Stock goes up automatically when you scan a receipt. Out-of-stock and low-stock items get flagged with a color so you can never run out mid-bake. No more spreadsheets."
+            body="Stock goes up automatically when you scan a receipt — and back down when you log a bake. Out-of-stock and low-stock items get flagged with a color so you can never run out mid-bake. No more spreadsheets."
           />
           <Feature
             icon={ShoppingCart}
             tint="bg-sky-100 text-sky-700"
             title="One-tap shopping lists"
-            body="Tell the app how many batches of each recipe you're baking. It works out exactly which packages to buy — minus what's already on hand — and groups the list by store. Email it to yourself with one tap."
+            body="Tell the app how many batches of each recipe you're baking. It works out exactly what ingredients to buy — minus what's already on hand — and groups the list by store. Email it to yourself with one tap."
           />
           <Feature
             icon={Camera}
             tint="bg-rose-100 text-rose-700"
             title="Recipes & receipts from your phone camera"
-            body="Snap a photo of any new recipe and Claude AI types it in for you. Same with grocery receipts — every line item gets matched to your inventory automatically. Zero data entry."
+            body="Snap a photo of any new recipe and import it automatically. Same with grocery receipts — every line item gets matched to your inventory automatically. Zero data entry."
           />
           <Feature
             icon={TrendingUp}
             tint="bg-violet-100 text-violet-700"
-            title="Watch ingredient prices over time"
-            body="Every receipt records the price you paid for each item. Tap any product to see the full history — so you'll spot when sugar's up 30% and can revisit your pricing before it eats your margin."
+            title="Track ingredient pricing"
+            body="Snap a picture of receipts to update current pricing and price history. Tap any product to see the full history — so you'll spot when sugar's up 30% and can revisit your pricing before it eats your margin."
           />
           <Feature
             icon={Sparkles}
