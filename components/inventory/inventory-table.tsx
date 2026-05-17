@@ -118,7 +118,7 @@ export function InventoryTable({
             <TableRow className="hover:bg-transparent bg-muted/20 [&_th]:h-9 [&_th]:font-normal [&_th]:text-[11px] [&_th]:tracking-wide [&_th]:uppercase [&_th]:text-muted-foreground">
               <TableHead className="pl-5">Product</TableHead>
               <TableHead>Store</TableHead>
-              <TableHead className="text-right">Package</TableHead>
+              <TableHead className="text-right">Quantity</TableHead>
               <TableHead className="text-right">Price</TableHead>
               <TableHead className="text-right">$/unit</TableHead>
               <TableHead>Stock</TableHead>

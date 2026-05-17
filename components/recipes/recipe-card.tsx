@@ -318,7 +318,7 @@ function IngredientCard({
       ? null
       : shortPackages <= 0
         ? { ok: true as const, label: "Yes" }
-        : { ok: false as const, label: `Short ${formatQty(shortPackages)} pkg` };
+        : { ok: false as const, label: `Short ${Math.ceil(shortPackages)} pkg` };
 
   const tone = lineTone(line);
 
@@ -591,7 +591,7 @@ function IngredientRow({
       ? null
       : shortPackages <= 0
         ? { ok: true as const, label: "Yes" }
-        : { ok: false as const, label: `Short ${formatQty(shortPackages)} pkg` };
+        : { ok: false as const, label: `Short ${Math.ceil(shortPackages)} pkg` };
 
   const tone = lineTone(line);
 

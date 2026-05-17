@@ -30,6 +30,7 @@ export async function proxy(req: NextRequest) {
   // getUser also refreshes the access token if needed.
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
 
   const { pathname } = req.nextUrl;
@@ -38,6 +39,14 @@ export async function proxy(req: NextRequest) {
   );
 
   if (!user && !isPublic) {
+    const incomingCookieNames = req.cookies
+      .getAll()
+      .map((c) => c.name)
+      .filter((n) => n.startsWith("sb-"))
+      .join(",");
+    console.log(
+      `[proxy] no-user redirect to /login. path=${pathname} sb-cookies=${incomingCookieNames || "(none)"} getUser-error=${userError?.message ?? ""}`
+    );
     const redirect = new URL("/login", req.url);
     if (pathname !== "/") redirect.searchParams.set("next", pathname);
     return NextResponse.redirect(redirect);
