@@ -20,6 +20,8 @@ import {
   insertStore,
   renameStore,
 } from "@/lib/db/stores";
+import { checkProductLimit } from "@/lib/limits";
+import { getServerSupabase } from "@/lib/supabase/server";
 import { ALL_UNITS } from "@/lib/units";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -55,6 +57,9 @@ export async function createProductAction(
   if (input.stock < 0 || !Number.isFinite(input.stock)) {
     return { ok: false, error: "Stock must be 0 or greater" };
   }
+
+  const limit = await checkProductLimit(await getServerSupabase());
+  if (!limit.allowed) return { ok: false, error: limit.error! };
 
   try {
     await insertProduct({ ...input, name });

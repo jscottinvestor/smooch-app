@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { productFromRow, type ProductRow } from "@/lib/db/mappers";
 import { deleteReceipt, insertReceipt, updateReceipt } from "@/lib/db/receipts";
 import { findCanonicalStoreName, rememberStoreAlias } from "@/lib/db/stores";
+import { checkReceiptLimit } from "@/lib/limits";
 import { normalizeAlias } from "@/lib/matching";
 import {
   OCR_SYSTEM_PROMPT,
@@ -67,6 +68,14 @@ export async function applyReceiptAction(
   input: ApplyReceiptInput
 ): Promise<ApplyReceiptResult> {
   const supabase = await getServerSupabase();
+
+  // Only count toward the monthly cap on NEW receipts. Reopens (which
+  // pass existingReceiptId) update an already-counted row.
+  if (!input.existingReceiptId) {
+    const limit = await checkReceiptLimit(supabase);
+    if (!limit.allowed) return { ok: false, error: limit.error! };
+  }
+
   const summary: ApplyReceiptSummary = {
     updated: 0,
     unchanged: 0,
@@ -365,6 +374,10 @@ export async function parseReceiptImageAction(
       return { ok: false, error: "Image data missing or too small." };
     }
 
+    // Don't burn an OCR call if the user is already at their monthly cap.
+    const limit = await checkReceiptLimit(await getServerSupabase());
+    if (!limit.allowed) return { ok: false, error: limit.error! };
+
     const sizeKb = Math.round((base64Image.length * 3) / 4 / 1024);
     console.log(`[receipt-ocr] image: ${mimeType}, ${sizeKb}KB`);
 
@@ -493,6 +506,11 @@ export async function saveReceiptForLaterAction(
   input: ApplyReceiptInput
 ): Promise<ActionResult> {
   try {
+    if (!input.existingReceiptId) {
+      const limit = await checkReceiptLimit(await getServerSupabase());
+      if (!limit.allowed) return { ok: false, error: limit.error! };
+    }
+
     const receiptLines: ReceiptLine[] = input.lines.map((line) => ({
       rawName: line.rawName,
       qty: line.qty,

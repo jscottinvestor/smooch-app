@@ -11,6 +11,7 @@ import {
   type NewRecipeInput,
 } from "@/lib/db/recipes";
 import { listProducts } from "@/lib/db/products";
+import { checkRecipeLimit } from "@/lib/limits";
 import { bestProductMatch } from "@/lib/matching";
 import {
   RECIPE_OCR_SYSTEM_PROMPT,
@@ -78,6 +79,10 @@ export async function createRecipeAction(
 ): Promise<CreateResult> {
   const err = validateRecipe(input);
   if (err) return { ok: false, error: err };
+
+  const limit = await checkRecipeLimit(await getServerSupabase());
+  if (!limit.allowed) return { ok: false, error: limit.error! };
+
   try {
     const id = await insertRecipe({ ...input, name: input.name.trim() });
     revalidatePath("/recipes");
