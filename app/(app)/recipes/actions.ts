@@ -11,6 +11,8 @@ import {
   type NewRecipeInput,
 } from "@/lib/db/recipes";
 import { listProducts } from "@/lib/db/products";
+import { computeBakeUsage, type BakePlanEntry } from "@/lib/bake";
+import { listRecipes } from "@/lib/db/recipes";
 import { checkRecipeLimit } from "@/lib/limits";
 import { bestProductMatch } from "@/lib/matching";
 import {
@@ -178,6 +180,79 @@ export async function autoMatchRecipeAction(
     return {
       ok: false,
       error: e instanceof Error ? e.message : "Auto-match failed",
+    };
+  }
+}
+
+export interface BakeRecipesResult {
+  ok: true;
+  productsDecremented: number;
+  totalBatches: number;
+  issuesCount: number;
+}
+export type BakeRecipesActionResult = BakeRecipesResult | { ok: false; error: string };
+
+/**
+ * Apply a baking session: take a plan of (recipeId, batches), compute how
+ * much of each linked product is consumed, and persist new stock levels.
+ * Stock can go negative if the user over-baked relative to what they had.
+ */
+export async function bakeRecipesAction(
+  plan: BakePlanEntry[]
+): Promise<BakeRecipesActionResult> {
+  const valid = plan.filter(
+    (p) => p.recipeId && Number.isFinite(p.batches) && p.batches > 0
+  );
+  if (valid.length === 0) {
+    return { ok: false, error: "No recipes selected." };
+  }
+
+  try {
+    const supabase = await getServerSupabase();
+    const [recipes, products] = await Promise.all([listRecipes(), listProducts()]);
+    const result = computeBakeUsage(valid, recipes, products);
+
+    if (result.usage.length === 0) {
+      return {
+        ok: false,
+        error:
+          result.issues.length > 0
+            ? "Nothing to decrement — none of the recipes' ingredients are linked to products yet."
+            : "Nothing to decrement.",
+      };
+    }
+
+    // Update each product's stock. Use individual UPDATEs since we have
+    // per-row new values; this is small enough that one query per product
+    // is fine (a handful of writes).
+    for (const u of result.usage) {
+      const { error } = await supabase
+        .from("products")
+        .update({ stock: u.newStock })
+        .eq("id", u.productId);
+      if (error) {
+        return {
+          ok: false,
+          error: `Couldn't update ${u.productName}: ${error.message}`,
+        };
+      }
+    }
+
+    revalidatePath("/inventory");
+    revalidatePath("/dashboard");
+    revalidatePath("/recipes");
+
+    const totalBatches = valid.reduce((s, p) => s + p.batches, 0);
+    return {
+      ok: true,
+      productsDecremented: result.usage.length,
+      totalBatches,
+      issuesCount: result.issues.length,
+    };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "Bake failed",
     };
   }
 }

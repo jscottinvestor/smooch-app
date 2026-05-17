@@ -1,6 +1,7 @@
-import { ShoppingCart } from "lucide-react";
+import { ChefHat, ShoppingCart } from "lucide-react";
 import { TabBar } from "@/components/nav/tab-bar";
 import { UserMenu } from "@/components/nav/user-menu";
+import { BakeDialog } from "@/components/dashboard/bake-dialog";
 import { ShoppingListDialog } from "@/components/dashboard/shopping-list-dialog";
 import { Button } from "@/components/ui/button";
 import { listCategories } from "@/lib/db/categories";
@@ -41,17 +42,25 @@ export default async function AppLayout({
       </header>
       <TabBar
         rightSlot={
-          <ShoppingListDialog
-            recipes={recipes}
-            products={products}
-            categories={categories}
-            userEmail={user?.email ?? null}
-          >
-            <Button size="sm" variant="outline" className="w-full sm:w-auto">
-              <ShoppingCart className="w-4 h-4" />
-              Create shopping list
-            </Button>
-          </ShoppingListDialog>
+          <div className="flex flex-wrap gap-2">
+            <ShoppingListDialog
+              recipes={recipes}
+              products={products}
+              categories={categories}
+              userEmail={user?.email ?? null}
+            >
+              <Button size="sm" variant="outline" className="w-full sm:w-auto">
+                <ShoppingCart className="w-4 h-4" />
+                Create shopping list
+              </Button>
+            </ShoppingListDialog>
+            <BakeDialog recipes={recipes} products={products}>
+              <Button size="sm" variant="outline" className="w-full sm:w-auto">
+                <ChefHat className="w-4 h-4" />
+                Bake products
+              </Button>
+            </BakeDialog>
+          </div>
         }
       />
       <main className="flex-1 py-8">{children}</main>
