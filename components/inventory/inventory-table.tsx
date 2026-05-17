@@ -111,20 +111,23 @@ export function InventoryTable({
 
   return (
     <>
-      {/* Desktop — full 9-column table */}
+      {/* Desktop — full 9-column table.
+          table-layout:fixed + explicit column widths on every TableHead keep
+          columns aligned across the DRY/WET/MIX-INS cards. Without this each
+          card auto-sizes columns to its own content and rows drift. */}
       <div className="hidden md:block overflow-x-auto">
-        <Table className="min-w-[820px]">
+        <Table className="min-w-[820px] w-full table-fixed">
           <TableHeader>
             <TableRow className="hover:bg-transparent bg-muted/20 [&_th]:h-9 [&_th]:font-normal [&_th]:text-[11px] [&_th]:tracking-wide [&_th]:uppercase [&_th]:text-muted-foreground">
               <TableHead className="pl-5">Product</TableHead>
-              <TableHead>Store</TableHead>
-              <TableHead className="text-right">Quantity</TableHead>
-              <TableHead className="text-right">Price</TableHead>
-              <TableHead className="text-right">$/unit</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead className="text-center">Status</TableHead>
-              <TableHead>Hist.</TableHead>
-              <TableHead className="pr-4" />
+              <TableHead className="w-[130px]">Store</TableHead>
+              <TableHead className="w-[110px] text-right">Quantity</TableHead>
+              <TableHead className="w-[80px] text-right">Price</TableHead>
+              <TableHead className="w-[110px] text-right">$/unit</TableHead>
+              <TableHead className="w-[100px]">Stock</TableHead>
+              <TableHead className="w-[100px] text-center">Status</TableHead>
+              <TableHead className="w-[60px]">Hist.</TableHead>
+              <TableHead className="w-[50px] pr-4" />
             </TableRow>
           </TableHeader>
           <TableBody className="[&_tr]:border-b-0 [&_td]:py-3">
