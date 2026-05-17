@@ -1,10 +1,10 @@
 import {
   Camera,
-  ChefHat,
   Cookie,
-  Receipt,
+  PackageOpen,
   ShoppingCart,
   Sparkles,
+  TrendingUp,
   Wallet,
   type LucideIcon,
 } from "lucide-react";
@@ -71,48 +71,42 @@ export default async function HomePage() {
           </div>
         </div>
 
-        <div className="pb-12 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="pb-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Feature
-            icon={ChefHat}
-            tint="bg-rose-100 text-rose-700"
-            title="Recipes that cost themselves"
-            body="Add a recipe, link each ingredient to a product, and instantly see cost per batch, cost per cookie, and how many batches your current inventory can make."
+            icon={Wallet}
+            tint="bg-emerald-100 text-emerald-700"
+            title="Know exactly what each product costs"
+            body="Link every recipe ingredient to a product in your pantry and the app does the math: cost per batch, cost per cookie, and your margin on every tray. Price with confidence instead of guessing."
           />
           <Feature
-            icon={Cookie}
+            icon={PackageOpen}
             tint="bg-amber-100 text-amber-700"
-            title="Ingredients in one place"
-            body="Per-product package sizes, prices, stock levels, conversion factors, and per-store organization. Color-tinted by category for at-a-glance scanning."
-          />
-          <Feature
-            icon={Receipt}
-            tint="bg-sky-100 text-sky-700"
-            title="Snap a receipt, done"
-            body="Photograph a Costco run from your phone. Claude reads the items, matches them to your inventory, updates prices and stock — you just confirm."
+            title="Inventory that monitors itself"
+            body="Stock goes up automatically when you scan a receipt. Out-of-stock and low-stock items get flagged with a color so you can never run out mid-bake. No more spreadsheets."
           />
           <Feature
             icon={ShoppingCart}
-            tint="bg-emerald-100 text-emerald-700"
-            title="Shopping lists, by store"
-            body="Pick the recipes you're making. Get a list of exactly what to buy — split per store, with stock you already have subtracted. Email it to yourself in one tap."
+            tint="bg-sky-100 text-sky-700"
+            title="One-tap shopping lists"
+            body="Tell the app how many batches of each recipe you're baking. It works out exactly which packages to buy — minus what's already on hand — and groups the list by store. Email it to yourself with one tap."
           />
-        </div>
-
-        <div className="pb-16 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-          <Tile
+          <Feature
             icon={Camera}
-            title="Phone-first"
-            body="Take a photo of a new recipe or a receipt right from your phone. Designed for the kitchen counter, not just the desk."
+            tint="bg-rose-100 text-rose-700"
+            title="Recipes & receipts from your phone camera"
+            body="Snap a photo of any new recipe and Claude AI types it in for you. Same with grocery receipts — every line item gets matched to your inventory automatically. Zero data entry."
           />
-          <Tile
-            icon={Wallet}
-            title="Know your margins"
-            body="See the cost of every cookie before you price a tray. Watch the math change as ingredient prices shift over time."
+          <Feature
+            icon={TrendingUp}
+            tint="bg-violet-100 text-violet-700"
+            title="Watch ingredient prices over time"
+            body="Every receipt records the price you paid for each item. Tap any product to see the full history — so you'll spot when sugar's up 30% and can revisit your pricing before it eats your margin."
           />
-          <Tile
+          <Feature
             icon={Sparkles}
-            title="Learns as you go"
-            body="Rename a store once and the app remembers. Old receipt spellings auto-match. Less typing, fewer duplicates."
+            tint="bg-orange-100 text-orange-700"
+            title="Smart, and getting smarter"
+            body="Rename a store once and the app remembers — every old spelling on future receipts auto-matches. Each correction you make trains the system. The longer you use it, the less typing you do."
           />
         </div>
       </section>
@@ -163,22 +157,3 @@ function Feature({
   );
 }
 
-function Tile({
-  icon: Icon,
-  title,
-  body,
-}: {
-  icon: LucideIcon;
-  title: string;
-  body: string;
-}) {
-  return (
-    <div className="rounded-md border bg-muted/30 p-4">
-      <div className="flex items-center gap-2 mb-1">
-        <Icon className="w-4 h-4 text-muted-foreground" />
-        <span className="font-medium">{title}</span>
-      </div>
-      <p className="text-muted-foreground leading-relaxed">{body}</p>
-    </div>
-  );
-}
