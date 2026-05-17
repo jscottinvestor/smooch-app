@@ -62,6 +62,7 @@ export function RecipesView({
       </div>
       {selected && (
         <RecipeCard
+          key={selected.id}
           recipe={selected}
           products={products}
           categories={categories}
