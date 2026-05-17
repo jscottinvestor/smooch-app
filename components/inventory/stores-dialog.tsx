@@ -22,6 +22,7 @@ import type { Product } from "@/lib/types";
 interface Store {
   id: string;
   name: string;
+  aliases: string[];
 }
 
 export function StoresDialog({
@@ -222,6 +223,12 @@ export function StoresDialog({
                             ? "no products"
                             : `${count} product${count === 1 ? "" : "s"}`}
                         </div>
+                        {s.aliases.length > 0 && (
+                          <div className="text-[11px] text-muted-foreground/80 mt-0.5 truncate">
+                            <span className="italic">Also matches:</span>{" "}
+                            {s.aliases.join(", ")}
+                          </div>
+                        )}
                       </div>
                       <Button
                         type="button"

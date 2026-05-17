@@ -5,6 +5,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { revalidatePath } from "next/cache";
 import { productFromRow, type ProductRow } from "@/lib/db/mappers";
 import { deleteReceipt, insertReceipt, updateReceipt } from "@/lib/db/receipts";
+import { findCanonicalStoreName } from "@/lib/db/stores";
 import { normalizeAlias } from "@/lib/matching";
 import {
   OCR_SYSTEM_PROMPT,
@@ -403,8 +404,18 @@ export async function parseReceiptImageAction(
       };
     }
 
+    // Canonicalize the OCR'd store name against the user's stores table.
+    // If the user has previously renamed this store (or one of its aliases
+    // matches), substitute the current canonical name so the review screen
+    // shows what they call it today, not the raw text from the receipt.
+    let storeText = parsed.store || "";
+    if (storeText) {
+      const canonical = await findCanonicalStoreName(storeText);
+      if (canonical) storeText = canonical;
+    }
+
     const result: ParsedReceipt = {
-      store: parsed.store || "",
+      store: storeText,
       date: parsed.date || new Date().toISOString().slice(0, 10),
       total: parsed.total,
       items: consolidateItems(

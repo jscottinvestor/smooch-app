@@ -66,7 +66,7 @@ export function InventoryView({
   categories: Category[];
   products: Product[];
   categoryPaths: CategoryPath[];
-  stores: { id: string; name: string }[];
+  stores: { id: string; name: string; aliases: string[] }[];
 }) {
   const catById = new Map(categories.map((c) => [c.id, c]));
   const tree = new Map<string, TopBucket>();

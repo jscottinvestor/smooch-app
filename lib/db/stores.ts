@@ -3,16 +3,45 @@ import { getServerSupabase } from "@/lib/supabase/server";
 export interface Store {
   id: string;
   name: string;
+  aliases: string[];
 }
 
 export async function listStores(): Promise<Store[]> {
   const supabase = await getServerSupabase();
   const { data, error } = await supabase
     .from("stores")
-    .select("id, name")
+    .select("id, name, aliases")
     .order("name");
   if (error) throw new Error(`listStores: ${error.message}`);
-  return (data ?? []) as Store[];
+  return (data ?? []).map((r) => ({
+    id: r.id as string,
+    name: r.name as string,
+    aliases: (r.aliases as string[] | null) ?? [],
+  }));
+}
+
+/**
+ * Look up the canonical store name for arbitrary text — used during
+ * receipt OCR to map OCR output ("COSTCO WHOLESALE #1234") to whatever
+ * the user calls that store today ("Costco").
+ *
+ * Matches case-insensitively against the store's name and aliases.
+ * Returns null if no store recognizes the text.
+ */
+export async function findCanonicalStoreName(
+  text: string
+): Promise<string | null> {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  const stores = await listStores();
+  const lower = trimmed.toLowerCase();
+  for (const s of stores) {
+    if (s.name.toLowerCase() === lower) return s.name;
+    for (const a of s.aliases) {
+      if (a.toLowerCase() === lower) return s.name;
+    }
+  }
+  return null;
 }
 
 export async function insertStore(name: string): Promise<void> {
@@ -30,7 +59,9 @@ export async function insertStore(name: string): Promise<void> {
 
 /**
  * Rename a store. Updates the stores row AND every product currently
- * tagged with the old name so the rename cascades.
+ * tagged with the old name so the rename cascades. Also pushes the old
+ * name into the row's `aliases` array so receipt OCR for that old
+ * spelling auto-canonicalizes to the new name.
  */
 export async function renameStore(id: string, newName: string): Promise<void> {
   const trimmed = newName.trim();
@@ -39,7 +70,7 @@ export async function renameStore(id: string, newName: string): Promise<void> {
 
   const { data: current, error: getErr } = await supabase
     .from("stores")
-    .select("name")
+    .select("name, aliases")
     .eq("id", id)
     .single();
   if (getErr || !current) {
@@ -47,9 +78,22 @@ export async function renameStore(id: string, newName: string): Promise<void> {
   }
   if (current.name === trimmed) return; // no-op
 
+  // Build updated aliases: previous aliases + the old name, dedup-ed
+  // case-insensitively, and never including the new canonical name.
+  const oldName = current.name as string;
+  const existingAliases = (current.aliases as string[] | null) ?? [];
+  const seen = new Set<string>([trimmed.toLowerCase()]);
+  const merged: string[] = [];
+  for (const a of [...existingAliases, oldName]) {
+    const key = a.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(a);
+  }
+
   const { error: storeErr } = await supabase
     .from("stores")
-    .update({ name: trimmed })
+    .update({ name: trimmed, aliases: merged })
     .eq("id", id);
   if (storeErr) {
     if (storeErr.code === "23505") {
@@ -61,7 +105,7 @@ export async function renameStore(id: string, newName: string): Promise<void> {
   const { error: prodErr } = await supabase
     .from("products")
     .update({ store: trimmed })
-    .eq("store", current.name);
+    .eq("store", oldName);
   if (prodErr) throw new Error(`renameStore (products): ${prodErr.message}`);
 }
 
