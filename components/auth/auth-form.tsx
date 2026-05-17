@@ -109,7 +109,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           className="font-display text-2xl tracking-tight"
           style={{ fontVariationSettings: '"opsz" 144, "SOFT" 50' }}
         >
-          SMOOCH BAKING BUDDY
+          COTTAGE BAKING BUDDY
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
           {mode === "login" ? "Sign in to your account." : "Create your account."}

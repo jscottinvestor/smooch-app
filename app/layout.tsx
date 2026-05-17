@@ -19,7 +19,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "SMOOCH BAKING BUDDY",
+  title: "COTTAGE BAKING BUDDY",
   description: "Recipes, inventory, receipts and costing",
 };
 

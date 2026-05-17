@@ -19,7 +19,7 @@ export default async function AppLayout({
           className="font-display text-3xl tracking-tight"
           style={{ fontVariationSettings: '"opsz" 144, "SOFT" 50' }}
         >
-          SMOOCH BAKING BUDDY
+          COTTAGE BAKING BUDDY
         </h1>
         <UserMenu email={user?.email ?? null} />
       </header>
