@@ -168,7 +168,7 @@ function RecipeSummary({
           className="font-display text-xl font-normal"
           style={{ fontVariationSettings: '"opsz" 144, "SOFT" 50' }}
         >
-          Recipe costing
+          Summary of Product Costs
         </CardTitle>
         <ShoppingListDialog
           recipes={recipes}
