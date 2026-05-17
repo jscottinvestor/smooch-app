@@ -35,7 +35,7 @@ export function LoginForm() {
   return (
     <form onSubmit={onSubmit} className="w-full max-w-sm space-y-5">
       <div>
-        <h1 className="text-xl font-semibold">Smooch App</h1>
+        <h1 className="text-xl font-semibold">SMOOCH BAKING BUDDY</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Enter the password to continue.
         </p>

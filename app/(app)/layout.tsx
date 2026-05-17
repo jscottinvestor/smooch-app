@@ -12,11 +12,8 @@ export default function AppLayout({
           className="font-display text-3xl tracking-tight"
           style={{ fontVariationSettings: '"opsz" 144, "SOFT" 50' }}
         >
-          Cookie business
+          SMOOCH BAKING BUDDY
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Recipes, inventory, receipts &amp; costing
-        </p>
       </header>
       <TabBar />
       <main className="flex-1 py-8">{children}</main>

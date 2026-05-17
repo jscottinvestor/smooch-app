@@ -1,14 +1,23 @@
-import { AlertCircle, ChefHat, Wallet, type LucideIcon } from "lucide-react";
+import {
+  AlertCircle,
+  ChefHat,
+  ShoppingCart,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatMoney } from "@/lib/format";
 import { maxBatches, recipeCost } from "@/lib/recipe-math";
 import type { Category, Product, Recipe } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { ShoppingListDialog } from "./shopping-list-dialog";
 
 export function DashboardView({
   products,
   recipes,
+  categories,
 }: {
   products: Product[];
   recipes: Recipe[];
@@ -52,7 +61,11 @@ export function DashboardView({
         />
       </div>
 
-      <RecipeSummary recipes={recipes} products={products} />
+      <RecipeSummary
+        recipes={recipes}
+        products={products}
+        categories={categories}
+      />
     </div>
   );
 }
@@ -103,9 +116,11 @@ function MetricCard({
 function RecipeSummary({
   recipes,
   products,
+  categories,
 }: {
   recipes: Recipe[];
   products: Product[];
+  categories: Category[];
 }) {
   if (recipes.length === 0) {
     return (
@@ -148,13 +163,23 @@ function RecipeSummary({
 
   return (
     <Card className="shadow-sm shadow-foreground/[0.03] overflow-hidden">
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-4 flex flex-row items-center justify-between gap-3 space-y-0">
         <CardTitle
           className="font-display text-xl font-normal"
           style={{ fontVariationSettings: '"opsz" 144, "SOFT" 50' }}
         >
           Recipe costing
         </CardTitle>
+        <ShoppingListDialog
+          recipes={recipes}
+          products={products}
+          categories={categories}
+        >
+          <Button size="sm" variant="outline">
+            <ShoppingCart className="w-4 h-4" />
+            Create shopping list
+          </Button>
+        </ShoppingListDialog>
       </CardHeader>
       <CardContent className="p-0 border-t">
         {/* Desktop — table */}

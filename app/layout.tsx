@@ -19,8 +19,8 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Smooch App",
-  description: "Cookie business inventory, recipes, and receipts",
+  title: "SMOOCH BAKING BUDDY",
+  description: "Recipes, inventory, receipts and costing",
 };
 
 export default function RootLayout({
