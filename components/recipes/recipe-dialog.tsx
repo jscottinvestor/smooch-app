@@ -36,6 +36,7 @@ import {
   updateRecipeAction,
 } from "@/app/(app)/recipes/actions";
 import { resizeImageForUpload } from "@/lib/image-resize";
+import { bestProductMatch } from "@/lib/matching";
 import {
   buildCategoryPaths,
   getDescendantCategoryIds,
@@ -188,16 +189,26 @@ export function RecipeDialog({
       if (productsPerBatch !== null && productsPerBatch > 0) {
         setCookiesPerBatch(String(productsPerBatch));
       }
+      // Auto-pick an existing product for each ingredient when we have a
+      // confident name match. Recipe ingredient names are typically clean
+      // ("Brown Sugar", "All Purpose Flour") so token-overlap on the
+      // product name alone is reliable — threshold 0.6 catches obvious
+      // matches without auto-picking borderline ones.
+      const AUTO_PICK_THRESHOLD = 0.6;
       setDrafts(
-        ingredients.map((ing) => ({
-          id: crypto.randomUUID(),
-          name: ing.name,
-          quantity: String(ing.quantity),
-          unit: ing.unit,
-          productId: null,
-          useAnyMatching: false,
-          filterCategoryId: null,
-        }))
+        ingredients.map((ing) => {
+          const { product, score } = bestProductMatch(ing.name, null, products);
+          const autoPick = product && score >= AUTO_PICK_THRESHOLD ? product : null;
+          return {
+            id: crypto.randomUUID(),
+            name: ing.name,
+            quantity: String(ing.quantity),
+            unit: ing.unit,
+            productId: autoPick?.id ?? null,
+            useAnyMatching: false,
+            filterCategoryId: null,
+          };
+        })
       );
       clearPhoto();
     } catch (e) {
