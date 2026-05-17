@@ -56,11 +56,19 @@ export function ReceiptInput({
     if (!preview) return;
     setError(null);
     startTransition(async () => {
-      const res = await parseReceiptImageAction(preview.base64, preview.mimeType);
-      if (res.ok) {
-        onParsed(res.parsed);
-      } else {
-        setError(res.error);
+      try {
+        const res = await parseReceiptImageAction(preview.base64, preview.mimeType);
+        if (res.ok) {
+          onParsed(res.parsed);
+        } else {
+          setError(res.error);
+        }
+      } catch (e) {
+        setError(
+          e instanceof Error
+            ? `${e.message}. Try a smaller photo or a stronger Wi-Fi connection.`
+            : "Couldn't reach the server. Try again."
+        );
       }
     });
   }

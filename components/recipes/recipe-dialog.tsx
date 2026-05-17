@@ -200,6 +200,12 @@ export function RecipeDialog({
         }))
       );
       clearPhoto();
+    } catch (e) {
+      setPhotoError(
+        e instanceof Error
+          ? `${e.message}. Try a smaller photo or a stronger Wi-Fi connection.`
+          : "Couldn't reach the server. Try again."
+      );
     } finally {
       setPhotoImporting(false);
     }
