@@ -3,7 +3,7 @@ import type { Category } from "@/lib/types";
 import { categoryFromRow, type CategoryRow } from "./mappers";
 
 export async function listCategories(): Promise<Category[]> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { data, error } = await supabase
     .from("categories")
     .select("id, name, parent_id")
@@ -16,7 +16,7 @@ export async function insertCategory(
   name: string,
   parentId: string | null
 ): Promise<string> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { data, error } = await supabase
     .from("categories")
     .insert({ name, parent_id: parentId })
@@ -27,7 +27,7 @@ export async function insertCategory(
 }
 
 export async function renameCategory(id: string, name: string): Promise<void> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { error } = await supabase
     .from("categories")
     .update({ name })
@@ -36,13 +36,13 @@ export async function renameCategory(id: string, name: string): Promise<void> {
 }
 
 export async function deleteCategory(id: string): Promise<void> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { error } = await supabase.from("categories").delete().eq("id", id);
   if (error) throw new Error(`deleteCategory: ${error.message}`);
 }
 
 export async function categoryHasProducts(id: string): Promise<boolean> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { count, error } = await supabase
     .from("products")
     .select("*", { count: "exact", head: true })
@@ -52,7 +52,7 @@ export async function categoryHasProducts(id: string): Promise<boolean> {
 }
 
 export async function categoryHasChildren(id: string): Promise<boolean> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { count, error } = await supabase
     .from("categories")
     .select("*", { count: "exact", head: true })

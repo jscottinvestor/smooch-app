@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export default async function RecipesPage() {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   await seedDatabaseIfEmpty(supabase);
   await seedRecipesIfEmpty(supabase);
 

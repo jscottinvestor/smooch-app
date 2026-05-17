@@ -1,10 +1,15 @@
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
 
 /**
- * Server-side Supabase client using the anon key (same permissions as browser).
- * The app's access control is the proxy.ts password gate, not Supabase Auth.
+ * Server-side Supabase client bound to the current request's cookies.
+ * Reads the user's session from the cookie store; RLS filters every query
+ * to that user's rows.
+ *
+ * Use this in server components and server actions.
  */
-export function getServerSupabase(): SupabaseClient {
+export async function getServerSupabase(): Promise<SupabaseClient> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anon) {
@@ -12,15 +17,31 @@ export function getServerSupabase(): SupabaseClient {
       "Missing NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY"
     );
   }
-  return createClient(url, anon, {
-    auth: { persistSession: false },
+
+  const cookieStore = await cookies();
+
+  return createServerClient(url, anon, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+          });
+        } catch {
+          // setAll runs in a Server Component context where cookies are
+          // read-only. Middleware refreshes the session, so this is safe to ignore.
+        }
+      },
+    },
   });
 }
 
 /**
- * Server-side Supabase client using the SERVICE ROLE key. Bypasses RLS and any
- * future row-level restrictions. Use only in trusted server code (API routes,
- * server actions) — never expose to the browser.
+ * Service-role client — bypasses RLS. Use ONLY for trusted server-side
+ * admin operations (e.g., one-time data migrations). Never expose to client.
  */
 export function getServiceSupabase(): SupabaseClient {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

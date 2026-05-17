@@ -3,7 +3,7 @@ import type { Product } from "@/lib/types";
 import { productFromRow, type ProductRow } from "./mappers";
 
 export async function listProducts(): Promise<Product[]> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { data, error } = await supabase
     .from("products")
     .select("*")
@@ -16,7 +16,7 @@ export async function setProductStock(id: string, stock: number): Promise<void> 
   if (!Number.isFinite(stock) || stock < 0) {
     throw new Error("Stock must be a non-negative number");
   }
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { error } = await supabase
     .from("products")
     .update({ stock })
@@ -42,7 +42,7 @@ export interface NewProductInput {
 }
 
 export async function insertProduct(input: NewProductInput): Promise<void> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const priceHistory =
     input.price > 0
       ? [
@@ -68,7 +68,7 @@ export async function insertProduct(input: NewProductInput): Promise<void> {
 }
 
 export async function getProduct(id: string): Promise<Product | null> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { data, error } = await supabase
     .from("products")
     .select("*")
@@ -82,7 +82,7 @@ export async function updateProduct(
   id: string,
   input: NewProductInput
 ): Promise<void> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const existing = await getProduct(id);
   if (!existing) throw new Error(`Product not found: ${id}`);
 
@@ -117,7 +117,7 @@ export async function updateProduct(
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { error } = await supabase.from("products").delete().eq("id", id);
   if (error) throw new Error(`deleteProduct: ${error.message}`);
 }

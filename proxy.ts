@@ -1,34 +1,56 @@
+import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
-import { AUTH_COOKIE, hashPassword } from "@/lib/auth";
 
-const PUBLIC_PREFIXES = ["/login", "/api/auth/"];
+const PUBLIC_PREFIXES = ["/login", "/signup", "/auth"];
 
 export async function proxy(req: NextRequest) {
+  let response = NextResponse.next({ request: req });
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anon) {
+    return new NextResponse("Supabase env vars not configured", { status: 500 });
+  }
+
+  const supabase = createServerClient(url, anon, {
+    cookies: {
+      getAll() {
+        return req.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => req.cookies.set(name, value));
+        response = NextResponse.next({ request: req });
+        cookiesToSet.forEach(({ name, value, options }) =>
+          response.cookies.set(name, value, options)
+        );
+      },
+    },
+  });
+
+  // getUser also refreshes the access token if needed.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const { pathname } = req.nextUrl;
+  const isPublic = PUBLIC_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p)
+  );
 
-  if (PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(p))) {
-    return NextResponse.next();
+  if (!user && !isPublic) {
+    const redirect = new URL("/login", req.url);
+    if (pathname !== "/") redirect.searchParams.set("next", pathname);
+    return NextResponse.redirect(redirect);
   }
 
-  const appPassword = process.env.APP_PASSWORD;
-  if (!appPassword) {
-    // Fail open in dev so first-run isn't a lockout; fail closed in production.
-    if (process.env.NODE_ENV === "production") {
-      return new NextResponse("APP_PASSWORD not configured", { status: 500 });
-    }
-    return NextResponse.next();
+  // Already signed in — bounce off the auth pages.
+  if (user && (pathname === "/login" || pathname === "/signup")) {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
-  const expected = await hashPassword(appPassword);
-  const cookie = req.cookies.get(AUTH_COOKIE)?.value;
-  if (cookie === expected) return NextResponse.next();
-
-  const url = new URL("/login", req.url);
-  if (pathname !== "/") url.searchParams.set("next", pathname);
-  return NextResponse.redirect(url);
+  return response;
 }
 
 export const config = {
-  // Run on all routes except Next internals and asset files (anything with a dot).
   matcher: ["/((?!_next/|favicon|.*\\..*).*)"],
 };

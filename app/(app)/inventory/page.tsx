@@ -8,7 +8,7 @@ import { InventoryView } from "@/components/inventory/inventory-view";
 export const dynamic = "force-dynamic";
 
 export default async function InventoryPage() {
-  await seedDatabaseIfEmpty(getServerSupabase());
+  await seedDatabaseIfEmpty(await getServerSupabase());
   const [categories, products] = await Promise.all([
     listCategories(),
     listProducts(),

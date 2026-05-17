@@ -29,7 +29,7 @@ export async function setIngredientProductAction(
   productId: string | null
 ): Promise<ActionResult> {
   try {
-    const supabase = getServerSupabase();
+    const supabase = await getServerSupabase();
     const { data, error } = await supabase
       .from("recipes")
       .select("ingredients")

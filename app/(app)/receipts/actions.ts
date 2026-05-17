@@ -61,7 +61,7 @@ export type ApplyReceiptResult =
 export async function applyReceiptAction(
   input: ApplyReceiptInput
 ): Promise<ApplyReceiptResult> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const summary: ApplyReceiptSummary = {
     updated: 0,
     unchanged: 0,

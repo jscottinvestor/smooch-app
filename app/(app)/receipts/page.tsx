@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export default async function ReceiptsPage() {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   await seedDatabaseIfEmpty(supabase);
 
   const [products, categories, receipts] = await Promise.all([

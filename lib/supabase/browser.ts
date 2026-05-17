@@ -1,8 +1,12 @@
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 let _client: SupabaseClient | null = null;
 
-/** Singleton Supabase client for use in browser ("use client") components. */
+/**
+ * Singleton browser client. Uses cookie-based session storage so that
+ * server actions and server components see the same auth state.
+ */
 export function getBrowserSupabase(): SupabaseClient {
   if (_client) return _client;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -12,8 +16,6 @@ export function getBrowserSupabase(): SupabaseClient {
       "Missing NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY"
     );
   }
-  _client = createClient(url, anon, {
-    auth: { persistSession: false },
-  });
+  _client = createBrowserClient(url, anon);
   return _client;
 }

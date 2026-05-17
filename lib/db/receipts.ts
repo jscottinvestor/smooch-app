@@ -20,7 +20,7 @@ function receiptFromRow(r: ReceiptRow): Receipt {
 }
 
 export async function listReceipts(): Promise<Receipt[]> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { data, error } = await supabase
     .from("receipts")
     .select("*")
@@ -36,7 +36,7 @@ export async function insertReceipt(input: {
   total: number | null;
   lines: ReceiptLine[];
 }): Promise<string> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { data, error } = await supabase
     .from("receipts")
     .insert({
@@ -60,7 +60,7 @@ export async function updateReceipt(
     lines: ReceiptLine[];
   }
 ): Promise<void> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { error } = await supabase
     .from("receipts")
     .update({
@@ -74,7 +74,7 @@ export async function updateReceipt(
 }
 
 export async function deleteReceipt(id: string): Promise<void> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { error } = await supabase.from("receipts").delete().eq("id", id);
   if (error) throw new Error(`deleteReceipt: ${error.message}`);
 }

@@ -3,7 +3,7 @@ import type { Ingredient, Recipe } from "@/lib/types";
 import { recipeFromRow, type RecipeRow } from "./mappers";
 
 export async function listRecipes(): Promise<Recipe[]> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { data, error } = await supabase
     .from("recipes")
     .select("*")
@@ -17,7 +17,7 @@ export async function setRecipeIngredients(
   recipeId: string,
   ingredients: Ingredient[]
 ): Promise<void> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { error } = await supabase
     .from("recipes")
     .update({ ingredients })
@@ -33,7 +33,7 @@ export interface NewRecipeInput {
 }
 
 export async function insertRecipe(input: NewRecipeInput): Promise<string> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { data, error } = await supabase
     .from("recipes")
     .insert({
@@ -52,7 +52,7 @@ export async function updateRecipe(
   id: string,
   input: NewRecipeInput
 ): Promise<void> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { error } = await supabase
     .from("recipes")
     .update({
@@ -66,7 +66,7 @@ export async function updateRecipe(
 }
 
 export async function deleteRecipe(id: string): Promise<void> {
-  const supabase = getServerSupabase();
+  const supabase = await getServerSupabase();
   const { error } = await supabase.from("recipes").delete().eq("id", id);
   if (error) throw new Error(`deleteRecipe: ${error.message}`);
 }
