@@ -80,7 +80,7 @@ export function RecipeCard({
           <div className="flex items-center gap-3 shrink-0">
             <span className="text-xs text-muted-foreground tabular-nums">
               {formatQty(savedBatches)} × {formatQty(recipe.cookiesPerBatch)}{" "}
-              cookies/batch
+              products/batch
             </span>
             <RecipeDialog
               recipe={recipe}
@@ -112,7 +112,7 @@ export function RecipeCard({
               className="h-7 w-16 text-right text-sm tabular-nums"
             />
             <span className="text-muted-foreground">
-              batches → {formatQty(totalCookies)} cookies
+              batches → {formatQty(totalCookies)} products
             </span>
             {isMultiplied && (
               <button
@@ -142,7 +142,7 @@ export function RecipeCard({
           <div className="mt-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
             <p>
-              Link each ingredient to a product (column 2) to see cost-per-cookie
+              Link each ingredient to a product (column 2) to see cost-per-product
               and stock availability.
             </p>
           </div>
@@ -191,7 +191,7 @@ export function RecipeCard({
               </tr>
               <tr>
                 <td className="px-5 py-2 text-sm" colSpan={3}>
-                  <span className="text-muted-foreground">Cost per cookie</span>
+                  <span className="text-muted-foreground">Cost per product</span>
                 </td>
                 <td className="text-right py-2 font-medium tabular-nums">
                   {allKnown
@@ -265,7 +265,7 @@ export function RecipeCard({
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Cost per cookie</span>
+              <span className="text-muted-foreground">Cost per product</span>
               <span className="font-medium tabular-nums">
                 {allKnown
                   ? formatMoney(costPerCookie, 4)

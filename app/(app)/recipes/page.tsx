@@ -8,6 +8,9 @@ import { RecipesView } from "@/components/recipes/recipes-view";
 
 export const dynamic = "force-dynamic";
 
+/** Claude vision OCR on the photo-import path can take 10–30s. */
+export const maxDuration = 60;
+
 export default async function RecipesPage() {
   const supabase = getServerSupabase();
   await seedDatabaseIfEmpty(supabase);

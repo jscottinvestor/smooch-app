@@ -1,8 +1,16 @@
 "use client";
 
-import { Plus, Trash2, X } from "lucide-react";
+import {
+  Camera,
+  Image as ImageIcon,
+  Loader2,
+  Plus,
+  Sparkles,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,8 +32,10 @@ import {
 import {
   createRecipeAction,
   deleteRecipeAction,
+  parseRecipeImageAction,
   updateRecipeAction,
 } from "@/app/(app)/recipes/actions";
+import { resizeImageForUpload } from "@/lib/image-resize";
 import {
   buildCategoryPaths,
   getDescendantCategoryIds,
@@ -120,7 +130,80 @@ export function RecipeDialog({
     recipe ? recipe.ingredients.map(ingToDraft) : []
   );
 
+  // Photo-import state — only used in new-recipe mode.
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const libraryInputRef = useRef<HTMLInputElement>(null);
+  const [photoPreview, setPhotoPreview] = useState<{
+    base64: string;
+    dataUrl: string;
+    mimeType: string;
+  } | null>(null);
+  const [photoImporting, setPhotoImporting] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
   const categoryPaths = buildCategoryPaths(categories);
+
+  async function onPhotoFile(file: File) {
+    setPhotoError(null);
+    if (!file.type.startsWith("image/")) {
+      setPhotoError("Pick an image file (JPEG, PNG, WebP, or GIF).");
+      return;
+    }
+    try {
+      const resized = await resizeImageForUpload(file);
+      setPhotoPreview({
+        base64: resized.base64,
+        dataUrl: resized.dataUrl,
+        mimeType: resized.mimeType,
+      });
+    } catch (e) {
+      setPhotoError(
+        e instanceof Error ? e.message : "Couldn't process the image."
+      );
+    }
+  }
+
+  function clearPhoto() {
+    setPhotoPreview(null);
+    setPhotoError(null);
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
+    if (libraryInputRef.current) libraryInputRef.current.value = "";
+  }
+
+  async function onImportPhoto() {
+    if (!photoPreview) return;
+    setPhotoError(null);
+    setPhotoImporting(true);
+    try {
+      const res = await parseRecipeImageAction(
+        photoPreview.base64,
+        photoPreview.mimeType
+      );
+      if (!res.ok) {
+        setPhotoError(res.error);
+        return;
+      }
+      const { name: parsedName, productsPerBatch, ingredients } = res.parsed;
+      if (parsedName) setName(parsedName);
+      if (productsPerBatch !== null && productsPerBatch > 0) {
+        setCookiesPerBatch(String(productsPerBatch));
+      }
+      setDrafts(
+        ingredients.map((ing) => ({
+          id: crypto.randomUUID(),
+          name: ing.name,
+          quantity: String(ing.quantity),
+          unit: ing.unit,
+          productId: null,
+          useAnyMatching: false,
+          filterCategoryId: null,
+        }))
+      );
+      clearPhoto();
+    } finally {
+      setPhotoImporting(false);
+    }
+  }
 
   function reset() {
     if (recipe) {
@@ -223,6 +306,19 @@ export function RecipeDialog({
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={onSubmit} className="space-y-4">
+            {!isEdit && (
+              <PhotoImport
+                cameraInputRef={cameraInputRef}
+                libraryInputRef={libraryInputRef}
+                photoPreview={photoPreview}
+                photoError={photoError}
+                photoImporting={photoImporting}
+                onFile={onPhotoFile}
+                onClear={clearPhoto}
+                onImport={onImportPhoto}
+              />
+            )}
+
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">
                 Name<span className="text-destructive ml-0.5">*</span>
@@ -248,7 +344,7 @@ export function RecipeDialog({
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium">
-                  Cookies per batch
+                  Products per batch
                 </Label>
                 <Input
                   type="number"
@@ -562,6 +658,135 @@ function IngredientEditRow({
           </SelectContent>
         </Select>
       </div>
+    </div>
+  );
+}
+
+function PhotoImport({
+  cameraInputRef,
+  libraryInputRef,
+  photoPreview,
+  photoError,
+  photoImporting,
+  onFile,
+  onClear,
+  onImport,
+}: {
+  cameraInputRef: React.RefObject<HTMLInputElement | null>;
+  libraryInputRef: React.RefObject<HTMLInputElement | null>;
+  photoPreview: { dataUrl: string } | null;
+  photoError: string | null;
+  photoImporting: boolean;
+  onFile: (file: File) => void;
+  onClear: () => void;
+  onImport: () => void;
+}) {
+  return (
+    <div className="rounded-md border-2 border-dashed border-border bg-muted/30 p-3 space-y-3">
+      <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+        <Sparkles className="w-3.5 h-3.5" />
+        Have a photo of a recipe? Read it in to fill the form below.
+      </div>
+
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onFile(f);
+        }}
+      />
+      <input
+        ref={libraryInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onFile(f);
+        }}
+      />
+
+      {!photoPreview ? (
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => cameraInputRef.current?.click()}
+            disabled={photoImporting}
+          >
+            <Camera className="w-4 h-4" />
+            Take a photo
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => libraryInputRef.current?.click()}
+            disabled={photoImporting}
+          >
+            <ImageIcon className="w-4 h-4" />
+            Pick from photos
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="relative inline-block rounded-md overflow-hidden border bg-card">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={photoPreview.dataUrl}
+              alt="recipe preview"
+              className="max-h-44 w-auto block"
+            />
+            <button
+              type="button"
+              onClick={onClear}
+              disabled={photoImporting}
+              title="Pick a different photo"
+              className="absolute top-1.5 right-1.5 rounded-full bg-background/90 hover:bg-background border p-1.5 shadow-sm disabled:opacity-50"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span className="sr-only">Remove photo</span>
+            </button>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onClear}
+              disabled={photoImporting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={onImport}
+              disabled={photoImporting}
+            >
+              {photoImporting && <Loader2 className="w-4 h-4 animate-spin" />}
+              {photoImporting ? "Reading recipe…" : "Read recipe →"}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {photoError && (
+        <p className="text-sm text-destructive bg-destructive/10 rounded-md px-3 py-2">
+          {photoError}
+        </p>
+      )}
+
+      {photoImporting && (
+        <p className="text-xs text-muted-foreground italic">
+          Claude is reading your recipe — usually 5–15 seconds…
+        </p>
+      )}
     </div>
   );
 }

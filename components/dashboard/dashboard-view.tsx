@@ -164,7 +164,7 @@ function RecipeSummary({
               <tr className="bg-muted/20 text-[11px] tracking-wide uppercase text-muted-foreground">
                 <th className="text-left font-normal px-5 py-2.5">Recipe</th>
                 <th className="text-right font-normal py-2.5">Cost / batch</th>
-                <th className="text-right font-normal py-2.5">Cost / cookie</th>
+                <th className="text-right font-normal py-2.5">Cost / product</th>
                 <th className="text-right font-normal px-5 py-2.5">Can make</th>
               </tr>
             </thead>
@@ -180,7 +180,7 @@ function RecipeSummary({
                     </Link>
                     <div className="text-xs text-muted-foreground mt-0.5">
                       {s.recipe.batches || 1} batch × {s.recipe.cookiesPerBatch}{" "}
-                      cookies
+                      products
                     </div>
                   </td>
                   <td className="text-right py-3 tabular-nums">
@@ -254,7 +254,7 @@ function RecipeSummary({
                 </Link>
                 <div className="text-xs text-muted-foreground">
                   {s.recipe.batches || 1} batch × {s.recipe.cookiesPerBatch}{" "}
-                  cookies
+                  products
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 mt-3 text-sm">
@@ -267,7 +267,7 @@ function RecipeSummary({
                     : <span className="italic text-muted-foreground text-xs">not priced</span>}
                 </span>
                 <span className="text-muted-foreground text-xs">
-                  Cost / cookie
+                  Cost / product
                 </span>
                 <span className="text-right font-medium tabular-nums">
                   {s.costPerCookie > 0

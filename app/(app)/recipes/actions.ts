@@ -1,5 +1,7 @@
 "use server";
 
+import Anthropic from "@anthropic-ai/sdk";
+import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { revalidatePath } from "next/cache";
 import {
   deleteRecipe,
@@ -8,8 +10,13 @@ import {
   updateRecipe,
   type NewRecipeInput,
 } from "@/lib/db/recipes";
+import {
+  RECIPE_OCR_SYSTEM_PROMPT,
+  RecipeOcrSchema,
+  type RecipeOcrResult,
+} from "@/lib/recipe-ocr";
 import { getServerSupabase } from "@/lib/supabase/server";
-import type { Ingredient } from "@/lib/types";
+import type { Ingredient, Unit } from "@/lib/types";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 export type CreateResult =
@@ -110,4 +117,118 @@ export async function deleteRecipeAction(id: string): Promise<ActionResult> {
       error: e instanceof Error ? e.message : "Delete failed",
     };
   }
+}
+
+export interface ParsedRecipeImage {
+  name: string | null;
+  productsPerBatch: number | null;
+  ingredients: Array<{
+    name: string;
+    quantity: number;
+    unit: Unit;
+  }>;
+}
+
+export type ParseRecipeImageResult =
+  | { ok: true; parsed: ParsedRecipeImage }
+  | { ok: false; error: string };
+
+const SUPPORTED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
+
+/**
+ * Send a recipe photo to Claude vision and return the parsed fields the
+ * New-recipe modal can pre-fill into its draft state.
+ */
+export async function parseRecipeImageAction(
+  base64Image: string,
+  mimeType: string
+): Promise<ParseRecipeImageResult> {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return {
+      ok: false,
+      error: "ANTHROPIC_API_KEY isn't configured on the server.",
+    };
+  }
+  if (!SUPPORTED_IMAGE_TYPES.has(mimeType)) {
+    return {
+      ok: false,
+      error: `Unsupported image type: ${mimeType}. Use JPEG, PNG, WebP, or GIF.`,
+    };
+  }
+  if (!base64Image || base64Image.length < 100) {
+    return { ok: false, error: "Image data missing or too small." };
+  }
+
+  const client = new Anthropic();
+
+  let response;
+  try {
+    response = await client.messages.parse({
+      model: "claude-opus-4-7",
+      max_tokens: 8000,
+      system: RECIPE_OCR_SYSTEM_PROMPT,
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: mimeType as
+                  | "image/jpeg"
+                  | "image/png"
+                  | "image/webp"
+                  | "image/gif",
+                data: base64Image,
+              },
+            },
+            {
+              type: "text",
+              text: "Extract the recipe's name, yield (products per batch), and full ingredient list from this photo.",
+            },
+          ],
+        },
+      ],
+      output_config: { format: zodOutputFormat(RecipeOcrSchema) },
+    });
+  } catch (e) {
+    if (e instanceof Anthropic.APIError) {
+      return {
+        ok: false,
+        error: `Claude API error (${e.status}): ${e.message}`,
+      };
+    }
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "OCR call failed",
+    };
+  }
+
+  const parsed = response.parsed_output as RecipeOcrResult | null;
+  if (!parsed) {
+    return {
+      ok: false,
+      error:
+        "Claude returned an unparseable response. Try a clearer photo (better lighting, less skew, fewer cut-off lines).",
+    };
+  }
+
+  return {
+    ok: true,
+    parsed: {
+      name: parsed.name,
+      productsPerBatch: parsed.productsPerBatch,
+      ingredients: parsed.ingredients.map((ing) => ({
+        name: ing.name,
+        quantity: ing.quantity,
+        unit: ing.unit as Unit,
+      })),
+    },
+  };
 }
