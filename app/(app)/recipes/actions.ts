@@ -148,87 +148,99 @@ export async function parseRecipeImageAction(
   base64Image: string,
   mimeType: string
 ): Promise<ParseRecipeImageResult> {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return {
-      ok: false,
-      error: "ANTHROPIC_API_KEY isn't configured on the server.",
-    };
-  }
-  if (!SUPPORTED_IMAGE_TYPES.has(mimeType)) {
-    return {
-      ok: false,
-      error: `Unsupported image type: ${mimeType}. Use JPEG, PNG, WebP, or GIF.`,
-    };
-  }
-  if (!base64Image || base64Image.length < 100) {
-    return { ok: false, error: "Image data missing or too small." };
-  }
-
-  const client = new Anthropic();
-
-  let response;
   try {
-    response = await client.messages.parse({
-      model: "claude-opus-4-7",
-      max_tokens: 8000,
-      system: RECIPE_OCR_SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "image",
-              source: {
-                type: "base64",
-                media_type: mimeType as
-                  | "image/jpeg"
-                  | "image/png"
-                  | "image/webp"
-                  | "image/gif",
-                data: base64Image,
-              },
-            },
-            {
-              type: "text",
-              text: "Extract the recipe's name, yield (products per batch), and full ingredient list from this photo.",
-            },
-          ],
-        },
-      ],
-      output_config: { format: zodOutputFormat(RecipeOcrSchema) },
-    });
-  } catch (e) {
-    if (e instanceof Anthropic.APIError) {
+    if (!process.env.ANTHROPIC_API_KEY) {
       return {
         ok: false,
-        error: `Claude API error (${e.status}): ${e.message}`,
+        error: "ANTHROPIC_API_KEY isn't configured on the server.",
       };
     }
+    if (!SUPPORTED_IMAGE_TYPES.has(mimeType)) {
+      return {
+        ok: false,
+        error: `Unsupported image type: ${mimeType}. Use JPEG, PNG, WebP, or GIF.`,
+      };
+    }
+    if (!base64Image || base64Image.length < 100) {
+      return { ok: false, error: "Image data missing or too small." };
+    }
+
+    const sizeKb = Math.round((base64Image.length * 3) / 4 / 1024);
+    console.log(`[recipe-ocr] image: ${mimeType}, ${sizeKb}KB`);
+
+    const client = new Anthropic();
+
+    let response;
+    try {
+      response = await client.messages.parse({
+        model: "claude-opus-4-7",
+        max_tokens: 8000,
+        system: RECIPE_OCR_SYSTEM_PROMPT,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image",
+                source: {
+                  type: "base64",
+                  media_type: mimeType as
+                    | "image/jpeg"
+                    | "image/png"
+                    | "image/webp"
+                    | "image/gif",
+                  data: base64Image,
+                },
+              },
+              {
+                type: "text",
+                text: "Extract the recipe's name, yield (products per batch), and full ingredient list from this photo.",
+              },
+            ],
+          },
+        ],
+        output_config: { format: zodOutputFormat(RecipeOcrSchema) },
+      });
+    } catch (e) {
+      console.error("[recipe-ocr] Anthropic call failed:", e);
+      if (e instanceof Anthropic.APIError) {
+        return {
+          ok: false,
+          error: `Claude API error (${e.status}): ${e.message}`,
+        };
+      }
+      return {
+        ok: false,
+        error: e instanceof Error ? e.message : "OCR call failed",
+      };
+    }
+
+    const parsed = response.parsed_output as RecipeOcrResult | null;
+    if (!parsed) {
+      return {
+        ok: false,
+        error:
+          "Claude returned an unparseable response. Try a clearer photo (better lighting, less skew, fewer cut-off lines).",
+      };
+    }
+
+    return {
+      ok: true,
+      parsed: {
+        name: parsed.name,
+        productsPerBatch: parsed.productsPerBatch,
+        ingredients: parsed.ingredients.map((ing) => ({
+          name: ing.name,
+          quantity: ing.quantity,
+          unit: ing.unit as Unit,
+        })),
+      },
+    };
+  } catch (e) {
+    console.error("[recipe-ocr] unhandled error:", e);
     return {
       ok: false,
-      error: e instanceof Error ? e.message : "OCR call failed",
+      error: e instanceof Error ? `Recipe OCR failed: ${e.message}` : "Recipe OCR failed (unknown error)",
     };
   }
-
-  const parsed = response.parsed_output as RecipeOcrResult | null;
-  if (!parsed) {
-    return {
-      ok: false,
-      error:
-        "Claude returned an unparseable response. Try a clearer photo (better lighting, less skew, fewer cut-off lines).",
-    };
-  }
-
-  return {
-    ok: true,
-    parsed: {
-      name: parsed.name,
-      productsPerBatch: parsed.productsPerBatch,
-      ingredients: parsed.ingredients.map((ing) => ({
-        name: ing.name,
-        quantity: ing.quantity,
-        unit: ing.unit as Unit,
-      })),
-    },
-  };
 }

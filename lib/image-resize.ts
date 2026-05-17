@@ -17,8 +17,8 @@ export async function resizeImageForUpload(
   width: number;
   height: number;
 }> {
-  const maxLongEdge = options.maxLongEdge ?? 2000;
-  const quality = options.quality ?? 0.85;
+  const maxLongEdge = options.maxLongEdge ?? 1600;
+  const quality = options.quality ?? 0.78;
 
   const dataUrlIn = await readAsDataURL(file);
   const img = await loadImage(dataUrlIn);

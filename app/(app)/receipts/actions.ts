@@ -327,91 +327,103 @@ export async function parseReceiptImageAction(
   base64Image: string,
   mimeType: string
 ): Promise<ParseReceiptResult> {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return {
-      ok: false,
-      error: "ANTHROPIC_API_KEY isn't configured on the server.",
-    };
-  }
-  if (!SUPPORTED_IMAGE_TYPES.has(mimeType)) {
-    return {
-      ok: false,
-      error: `Unsupported image type: ${mimeType}. Use JPEG, PNG, WebP, or GIF.`,
-    };
-  }
-  if (!base64Image || base64Image.length < 100) {
-    return { ok: false, error: "Image data missing or too small." };
-  }
-
-  const client = new Anthropic();
-
-  let response;
   try {
-    response = await client.messages.parse({
-      model: "claude-opus-4-7",
-      max_tokens: 8000,
-      system: OCR_SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "image",
-              source: {
-                type: "base64",
-                media_type: mimeType as
-                  | "image/jpeg"
-                  | "image/png"
-                  | "image/webp"
-                  | "image/gif",
-                data: base64Image,
-              },
-            },
-            {
-              type: "text",
-              text: "Extract the receipt's store, date, total, and every line-item.",
-            },
-          ],
-        },
-      ],
-      output_config: { format: zodOutputFormat(ReceiptSchema) },
-    });
-  } catch (e) {
-    if (e instanceof Anthropic.APIError) {
+    if (!process.env.ANTHROPIC_API_KEY) {
       return {
         ok: false,
-        error: `Claude API error (${e.status}): ${e.message}`,
+        error: "ANTHROPIC_API_KEY isn't configured on the server.",
       };
     }
+    if (!SUPPORTED_IMAGE_TYPES.has(mimeType)) {
+      return {
+        ok: false,
+        error: `Unsupported image type: ${mimeType}. Use JPEG, PNG, WebP, or GIF.`,
+      };
+    }
+    if (!base64Image || base64Image.length < 100) {
+      return { ok: false, error: "Image data missing or too small." };
+    }
+
+    const sizeKb = Math.round((base64Image.length * 3) / 4 / 1024);
+    console.log(`[receipt-ocr] image: ${mimeType}, ${sizeKb}KB`);
+
+    const client = new Anthropic();
+
+    let response;
+    try {
+      response = await client.messages.parse({
+        model: "claude-opus-4-7",
+        max_tokens: 8000,
+        system: OCR_SYSTEM_PROMPT,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image",
+                source: {
+                  type: "base64",
+                  media_type: mimeType as
+                    | "image/jpeg"
+                    | "image/png"
+                    | "image/webp"
+                    | "image/gif",
+                  data: base64Image,
+                },
+              },
+              {
+                type: "text",
+                text: "Extract the receipt's store, date, total, and every line-item.",
+              },
+            ],
+          },
+        ],
+        output_config: { format: zodOutputFormat(ReceiptSchema) },
+      });
+    } catch (e) {
+      console.error("[receipt-ocr] Anthropic call failed:", e);
+      if (e instanceof Anthropic.APIError) {
+        return {
+          ok: false,
+          error: `Claude API error (${e.status}): ${e.message}`,
+        };
+      }
+      return {
+        ok: false,
+        error: e instanceof Error ? e.message : "OCR call failed",
+      };
+    }
+
+    const parsed = response.parsed_output as ReceiptOcrResult | null;
+    if (!parsed) {
+      return {
+        ok: false,
+        error:
+          "Claude returned an unparseable response. Try a clearer photo (better lighting, less skew, fewer cut-off lines).",
+      };
+    }
+
+    const result: ParsedReceipt = {
+      store: parsed.store || "",
+      date: parsed.date || new Date().toISOString().slice(0, 10),
+      total: parsed.total,
+      items: consolidateItems(
+        parsed.items.map((item) => ({
+          rawName: item.rawName,
+          qty: item.qty || 1,
+          price: item.price,
+        }))
+      ),
+    };
+
+    return { ok: true, parsed: result };
+  } catch (e) {
+    console.error("[receipt-ocr] unhandled error:", e);
     return {
       ok: false,
-      error: e instanceof Error ? e.message : "OCR call failed",
+      error: e instanceof Error ? `Receipt OCR failed: ${e.message}` : "Receipt OCR failed (unknown error)",
     };
   }
-
-  const parsed = response.parsed_output as ReceiptOcrResult | null;
-  if (!parsed) {
-    return {
-      ok: false,
-      error:
-        "Claude returned an unparseable response. Try a clearer photo (better lighting, less skew, fewer cut-off lines).",
-    };
-  }
-
-  const result: ParsedReceipt = {
-    store: parsed.store || "",
-    date: parsed.date || new Date().toISOString().slice(0, 10),
-    total: parsed.total,
-    items: consolidateItems(
-      parsed.items.map((item) => ({
-        rawName: item.rawName,
-        qty: item.qty || 1,
-        price: item.price,
-      }))
-    ),
-  };
-
-  return { ok: true, parsed: result };
 }
 
 /**
