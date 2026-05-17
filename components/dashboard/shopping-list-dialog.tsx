@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, ArrowLeft, ShoppingCart } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Mail, ShoppingCart, Store } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,31 +12,46 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { formatQty } from "@/lib/format";
 import {
   computeShoppingList,
-  groupNeedsByTopLevel,
+  formatShoppingListText,
+  groupNeedsByStore,
   type ShoppingListResult,
 } from "@/lib/shopping-list";
 import type { Category, Product, Recipe } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const SECTION_TINTS: Record<string, string> = {
-  "DRY INGREDIENTS": "bg-amber-50/40",
-  "WET INGREDIENTS": "bg-sky-50/40",
-  "MIX-INS": "bg-rose-50/40",
-};
+// Used to color-tint each store section so they're visually distinct.
+const STORE_TINTS = [
+  "bg-amber-50/50",
+  "bg-sky-50/50",
+  "bg-rose-50/50",
+  "bg-emerald-50/50",
+  "bg-violet-50/50",
+  "bg-orange-50/50",
+];
+
+function emailList(result: ShoppingListResult, userEmail: string | null) {
+  const today = new Date().toISOString().slice(0, 10);
+  const subject = `Shopping list — ${today}`;
+  const body = formatShoppingListText(result);
+  const recipient = userEmail ?? "";
+  const href = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = href;
+}
 
 export function ShoppingListDialog({
   recipes,
   products,
   categories,
+  userEmail,
   children,
 }: {
   recipes: Recipe[];
   products: Product[];
   categories: Category[];
+  userEmail: string | null;
   children: React.ReactElement;
 }) {
   const [open, setOpen] = useState(false);
@@ -164,7 +179,7 @@ export function ShoppingListDialog({
               </DialogTitle>
             </DialogHeader>
             <OutputView result={result} />
-            <DialogFooter className="gap-2 sm:justify-between">
+            <DialogFooter className="gap-2 sm:justify-between flex-wrap">
               <Button
                 type="button"
                 variant="ghost"
@@ -174,12 +189,24 @@ export function ShoppingListDialog({
                 <ArrowLeft className="w-4 h-4" />
                 Adjust batches
               </Button>
-              <Button
-                type="button"
-                onClick={() => handleOpenChange(false)}
-              >
-                Done
-              </Button>
+              <div className="flex gap-2 flex-wrap">
+                {result && result.needs.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => emailList(result, userEmail)}
+                  >
+                    <Mail className="w-4 h-4" />
+                    Email me this list
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  onClick={() => handleOpenChange(false)}
+                >
+                  Done
+                </Button>
+              </div>
             </DialogFooter>
           </>
         )}
@@ -190,7 +217,7 @@ export function ShoppingListDialog({
 
 function OutputView({ result }: { result: ShoppingListResult | null }) {
   if (!result) return null;
-  const groups = groupNeedsByTopLevel(result.needs);
+  const groups = groupNeedsByStore(result.needs);
 
   const planSummary = result.plan
     .map((p) => `${p.batches} × ${p.recipe.name}`)
@@ -207,16 +234,17 @@ function OutputView({ result }: { result: ShoppingListResult | null }) {
         </div>
       ) : (
         <div className="space-y-3">
-          {groups.map(({ topName, items }) => (
+          {groups.map(({ store, items }, idx) => (
             <div
-              key={topName ?? "_uncat"}
+              key={store ?? "_nostore"}
               className={cn(
                 "rounded-md border p-3 space-y-1.5",
-                topName ? SECTION_TINTS[topName] : ""
+                store ? STORE_TINTS[idx % STORE_TINTS.length] : "bg-stone-50/60"
               )}
             >
-              <div className="font-display text-sm text-foreground/80">
-                {topName ? topName.toLowerCase() : "uncategorized"}
+              <div className="flex items-center gap-1.5 font-display text-sm text-foreground/80">
+                <Store className="w-3.5 h-3.5" />
+                {store ?? "No store set"}
               </div>
               <ul className="space-y-1.5">
                 {items.map((n) => (
@@ -228,7 +256,6 @@ function OutputView({ result }: { result: ShoppingListResult | null }) {
                       </span>
                     </div>
                     <div className="text-[11px] text-muted-foreground">
-                      {n.store && <span>{n.store} · </span>}
                       <span>
                         {formatQty(n.packageSize)} {n.packageUnit}/pkg
                       </span>

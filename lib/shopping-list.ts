@@ -212,3 +212,67 @@ export function groupNeedsByTopLevel(
   }
   return [...map.entries()].map(([topName, items]) => ({ topName, items }));
 }
+
+/**
+ * Group shopping needs by store. Items with no store land in a final
+ * "No store set" group so they aren't hidden.
+ */
+export function groupNeedsByStore(
+  needs: ShoppingNeed[]
+): { store: string | null; items: ShoppingNeed[] }[] {
+  const map = new Map<string | null, ShoppingNeed[]>();
+  for (const n of needs) {
+    const key = n.store && n.store.trim() ? n.store.trim() : null;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(n);
+  }
+  // Stores alphabetically; null (No store set) last
+  return [...map.entries()]
+    .sort((a, b) => {
+      if (a[0] === null) return 1;
+      if (b[0] === null) return -1;
+      return a[0].localeCompare(b[0]);
+    })
+    .map(([store, items]) => ({ store, items }));
+}
+
+/**
+ * Build a plain-text shopping list suitable for an email body or
+ * clipboard paste. Groups by store, lists package counts.
+ */
+export function formatShoppingListText(result: ShoppingListResult): string {
+  const today = new Date().toISOString().slice(0, 10);
+  const planLine = result.plan
+    .map((p) => `${p.batches} × ${p.recipe.name}`)
+    .join(" + ");
+
+  const lines: string[] = [];
+  lines.push(`COTTAGE BAKING BUDDY — Shopping list`);
+  lines.push(`Generated ${today}`);
+  if (planLine) lines.push(`For: ${planLine}`);
+  lines.push("");
+
+  if (result.needs.length === 0) {
+    lines.push("You're all set — current inventory covers everything.");
+    return lines.join("\n");
+  }
+
+  const groups = groupNeedsByStore(result.needs);
+  for (const { store, items } of groups) {
+    lines.push(`${store ? store.toUpperCase() : "NO STORE SET"}`);
+    for (const n of items) {
+      const sizeNote = `${n.packageSize} ${n.packageUnit}/pkg`;
+      lines.push(`  • ${n.productName} — ${n.packagesToBuy} pkg  (${sizeNote})`);
+    }
+    lines.push("");
+  }
+
+  if (result.issues.length > 0) {
+    lines.push(`NEEDS ATTENTION (${result.issues.length})`);
+    for (const iss of result.issues) {
+      lines.push(`  • ${iss.recipeName} → ${iss.ingredientName} (${iss.reason})`);
+    }
+  }
+
+  return lines.join("\n").trim();
+}

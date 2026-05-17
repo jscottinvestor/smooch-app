@@ -45,6 +45,7 @@ export default async function AppLayout({
             recipes={recipes}
             products={products}
             categories={categories}
+            userEmail={user?.email ?? null}
           >
             <Button size="sm" variant="outline" className="w-full sm:w-auto">
               <ShoppingCart className="w-4 h-4" />
