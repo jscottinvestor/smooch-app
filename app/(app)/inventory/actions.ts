@@ -15,6 +15,11 @@ import {
   updateProduct,
   type NewProductInput,
 } from "@/lib/db/products";
+import {
+  deleteStore,
+  insertStore,
+  renameStore,
+} from "@/lib/db/stores";
 import { ALL_UNITS } from "@/lib/units";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -161,6 +166,51 @@ export async function deleteCategoryAction(
     await deleteCategory(id);
     revalidatePath("/inventory");
     revalidatePath("/recipes");
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "Delete failed",
+    };
+  }
+}
+
+export async function createStoreAction(name: string): Promise<ActionResult> {
+  try {
+    await insertStore(name);
+    revalidatePath("/inventory");
+    revalidatePath("/dashboard");
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "Create failed",
+    };
+  }
+}
+
+export async function renameStoreAction(
+  id: string,
+  name: string
+): Promise<ActionResult> {
+  try {
+    await renameStore(id, name);
+    revalidatePath("/inventory");
+    revalidatePath("/dashboard");
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "Rename failed",
+    };
+  }
+}
+
+export async function deleteStoreAction(id: string): Promise<ActionResult> {
+  try {
+    await deleteStore(id);
+    revalidatePath("/inventory");
+    revalidatePath("/dashboard");
     return { ok: true };
   } catch (e) {
     return {

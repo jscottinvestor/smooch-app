@@ -3,6 +3,7 @@ import {
   Droplets,
   FolderTree,
   Plus,
+  Store,
   Wheat,
   type LucideIcon,
 } from "lucide-react";
@@ -14,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { CategoriesDialog } from "./categories-dialog";
 import { InventoryTable, type InventoryEntry } from "./inventory-table";
 import { ProductDialog } from "./product-dialog";
+import { StoresDialog } from "./stores-dialog";
 
 const TOP_ORDER = ["DRY INGREDIENTS", "WET INGREDIENTS", "MIX-INS"] as const;
 
@@ -59,10 +61,12 @@ export function InventoryView({
   categories,
   products,
   categoryPaths,
+  stores,
 }: {
   categories: Category[];
   products: Product[];
   categoryPaths: CategoryPath[];
+  stores: { id: string; name: string }[];
 }) {
   const catById = new Map(categories.map((c) => [c.id, c]));
   const tree = new Map<string, TopBucket>();
@@ -131,14 +135,10 @@ export function InventoryView({
     return topRank(la) - topRank(lb) || la.localeCompare(lb);
   });
 
-  const existingStores = (() => {
-    const set = new Set<string>();
-    for (const p of products) {
-      const s = p.store?.trim();
-      if (s) set.add(s);
-    }
-    return [...set].sort((a, b) => a.localeCompare(b));
-  })();
+  // Dropdown source — names come from the stores table now, not from
+  // distinct product.store values. Lets a user add a store before any
+  // product uses it, and prevents typo-driven splits in the shopping list.
+  const existingStores = stores.map((s) => s.name);
 
   return (
     <div className="space-y-6">
@@ -147,7 +147,13 @@ export function InventoryView({
           {products.length} product{products.length === 1 ? "" : "s"} across{" "}
           {orderedTopIds.length} group{orderedTopIds.length === 1 ? "" : "s"}
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <StoresDialog stores={stores} products={products}>
+            <Button size="sm" variant="outline">
+              <Store className="w-4 h-4" />
+              Manage stores
+            </Button>
+          </StoresDialog>
           <CategoriesDialog categories={categories} products={products}>
             <Button size="sm" variant="outline">
               <FolderTree className="w-4 h-4" />
