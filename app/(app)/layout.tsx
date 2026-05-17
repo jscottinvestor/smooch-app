@@ -1,5 +1,11 @@
+import { ShoppingCart } from "lucide-react";
 import { TabBar } from "@/components/nav/tab-bar";
 import { UserMenu } from "@/components/nav/user-menu";
+import { ShoppingListDialog } from "@/components/dashboard/shopping-list-dialog";
+import { Button } from "@/components/ui/button";
+import { listCategories } from "@/lib/db/categories";
+import { listProducts } from "@/lib/db/products";
+import { listRecipes } from "@/lib/db/recipes";
 import { getServerSupabase } from "@/lib/supabase/server";
 
 export default async function AppLayout({
@@ -8,9 +14,19 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const supabase = await getServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [
+    {
+      data: { user },
+    },
+    products,
+    recipes,
+    categories,
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    listProducts(),
+    listRecipes(),
+    listCategories(),
+  ]);
 
   return (
     <div className="flex flex-col flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6">
@@ -23,7 +39,20 @@ export default async function AppLayout({
         </h1>
         <UserMenu email={user?.email ?? null} />
       </header>
-      <TabBar />
+      <TabBar
+        rightSlot={
+          <ShoppingListDialog
+            recipes={recipes}
+            products={products}
+            categories={categories}
+          >
+            <Button size="sm" variant="outline" className="w-full sm:w-auto">
+              <ShoppingCart className="w-4 h-4" />
+              Create shopping list
+            </Button>
+          </ShoppingListDialog>
+        }
+      />
       <main className="flex-1 py-8">{children}</main>
     </div>
   );
