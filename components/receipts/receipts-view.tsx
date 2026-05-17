@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { CheckCircle2, Info, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import type { CategoryPath } from "@/lib/category-paths";
 import { bestProductMatch, classifyMatch } from "@/lib/matching";
 import {
@@ -8,9 +10,12 @@ import {
   type ParsedReceipt,
 } from "@/lib/receipt-parser";
 import type { Category, Product, Receipt } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { ReceiptHistory } from "./receipt-history";
 import { ReceiptInput } from "./receipt-input";
 import { ReceiptReview, type ReviewLine, type ReviewState } from "./receipt-review";
+
+type Toast = { kind: "success" | "info"; message: string };
 
 export function ReceiptsView({
   products,
@@ -24,6 +29,13 @@ export function ReceiptsView({
   receipts: Receipt[];
 }) {
   const [review, setReview] = useState<ReviewState | null>(null);
+  const [toast, setToast] = useState<Toast | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 6000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   function onParsed(parsed: ParsedReceipt) {
     const lines: ReviewLine[] = parsed.items.map((item) => {
@@ -104,26 +116,35 @@ export function ReceiptsView({
 
   if (review) {
     return (
-      <ReceiptReview
-        state={review}
-        onChange={setReview}
-        products={products}
-        categories={categories}
-        categoryPaths={categoryPaths}
-        onDone={() => setReview(null)}
-        onCancel={() => setReview(null)}
-      />
+      <div className="space-y-4">
+        <ToastBanner toast={toast} onDismiss={() => setToast(null)} />
+        <ReceiptReview
+          state={review}
+          onChange={setReview}
+          products={products}
+          categories={categories}
+          categoryPaths={categoryPaths}
+          onDone={(t) => {
+            setReview(null);
+            if (t) setToast(t);
+          }}
+          onCancel={() => setReview(null)}
+        />
+      </div>
     );
   }
 
   return (
     <div className="space-y-8">
+      <ToastBanner toast={toast} onDismiss={() => setToast(null)} />
       <ReceiptInput
         onParsed={(parsed) => {
           if (parsed.items.length === 0) {
-            alert(
-              "I couldn't read any line-items from that photo. Try a clearer shot."
-            );
+            setToast({
+              kind: "info",
+              message:
+                "Couldn't read any line-items from that photo. Try a clearer shot.",
+            });
             return;
           }
           onParsed(parsed);
@@ -134,6 +155,47 @@ export function ReceiptsView({
         products={products}
         onReopen={onReopen}
       />
+    </div>
+  );
+}
+
+function ToastBanner({
+  toast,
+  onDismiss,
+}: {
+  toast: Toast | null;
+  onDismiss: () => void;
+}) {
+  if (!toast) return null;
+  const isSuccess = toast.kind === "success";
+  const Icon = isSuccess ? CheckCircle2 : Info;
+  return (
+    <div
+      className={cn(
+        "rounded-md border-2 px-4 py-3 flex items-start gap-3",
+        isSuccess
+          ? "bg-emerald-50 border-emerald-300 text-emerald-900"
+          : "bg-amber-50 border-amber-300 text-amber-900"
+      )}
+      role="status"
+    >
+      <Icon className="w-5 h-5 shrink-0 mt-0.5" />
+      <div className="flex-1 text-sm leading-snug">
+        <div className="font-semibold">
+          {isSuccess ? "Success!" : "Heads up"}
+        </div>
+        <div>{toast.message}</div>
+      </div>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-xs"
+        onClick={onDismiss}
+        className="-mt-1 -mr-1"
+        title="Dismiss"
+      >
+        <X className="w-4 h-4" />
+      </Button>
     </div>
   );
 }

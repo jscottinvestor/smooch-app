@@ -75,7 +75,7 @@ export function ReceiptReview({
   products: Product[];
   categories: Category[];
   categoryPaths: CategoryPath[];
-  onDone: () => void;
+  onDone: (toast?: { kind: "success" | "info"; message: string }) => void;
   onCancel: () => void;
 }) {
   const router = useRouter();
@@ -145,8 +145,10 @@ export function ReceiptReview({
         if (s.stockBumped) bits.push(`${s.stockBumped} pkg added to stock`);
         if (s.skipped) bits.push(`${s.skipped} skipped`);
         if (s.ignored) bits.push(`${s.ignored} ignored`);
-        alert("Done. " + bits.join(", ") + ".");
-        onDone();
+        onDone({
+          kind: "success",
+          message: bits.length > 0 ? bits.join(", ") + "." : "Receipt applied.",
+        });
         router.refresh();
       } else {
         setError(res.error);
@@ -160,10 +162,11 @@ export function ReceiptReview({
     startTransition(async () => {
       const res = await saveReceiptForLaterAction(input);
       if (res.ok) {
-        alert(
-          "Saved. The receipt's in your history — Reopen it from the list when you're ready to apply."
-        );
-        onDone();
+        onDone({
+          kind: "success",
+          message:
+            "Saved to history — reopen it from the list when you're ready to apply.",
+        });
         router.refresh();
       } else {
         setError(res.error);
