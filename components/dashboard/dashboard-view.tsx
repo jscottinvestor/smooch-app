@@ -157,7 +157,8 @@ function RecipeSummary({
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0 border-t">
-        <div className="overflow-x-auto">
+        {/* Desktop — table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="bg-muted/20 text-[11px] tracking-wide uppercase text-muted-foreground">
@@ -171,61 +172,71 @@ function RecipeSummary({
               </tr>
             </thead>
             <tbody>
-              {summaries.map((s) => (
-                <tr key={s.recipe.id} className="border-t hover:bg-muted/20">
-                  <td className="px-5 py-3">
-                    <Link
-                      href="/recipes"
-                      className="font-medium hover:underline"
-                    >
-                      {s.recipe.name}
-                    </Link>
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      {s.recipe.batches || 1} batch × {s.recipe.cookiesPerBatch}{" "}
-                      cookies
-                    </div>
-                  </td>
-                  <td className="text-right py-3 tabular-nums">
-                    {s.costPerBatch > 0 ? (
-                      <span>
-                        {s.allKnown ? "" : "~"}
-                        {formatMoney(s.costPerBatch)}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground italic text-xs">
-                        not priced
-                      </span>
-                    )}
-                  </td>
-                  <td className="text-right py-3 tabular-nums">
-                    {s.costPerCookie > 0 ? (
-                      <span>
-                        {s.allKnown ? "" : "~"}
-                        {formatMoney(s.costPerCookie, 4)}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground italic text-xs">
-                        —
-                      </span>
-                    )}
-                  </td>
-                  <td className="text-right py-3 tabular-nums">
-                    <span
-                      className={cn(
-                        s.batchesPossible === 0 && "text-muted-foreground"
+              {summaries.map((s) => {
+                const tone = s.batchesPossible === 0
+                  ? "bg-red-50/50"
+                  : s.allKnown
+                    ? ""
+                    : "bg-amber-50/50";
+                return (
+                  <tr
+                    key={s.recipe.id}
+                    className={cn("border-t hover:bg-muted/20", tone)}
+                  >
+                    <td className="px-5 py-3">
+                      <Link
+                        href="/recipes"
+                        className="font-medium hover:underline"
+                      >
+                        {s.recipe.name}
+                      </Link>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        {s.recipe.batches || 1} batch × {s.recipe.cookiesPerBatch}{" "}
+                        cookies
+                      </div>
+                    </td>
+                    <td className="text-right py-3 tabular-nums">
+                      {s.costPerBatch > 0 ? (
+                        <span>
+                          {s.allKnown ? "" : "~"}
+                          {formatMoney(s.costPerBatch)}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground italic text-xs">
+                          not priced
+                        </span>
                       )}
-                    >
-                      {s.batchesPossible}{" "}
-                      <span className="text-muted-foreground text-xs">
-                        batch{s.batchesPossible === 1 ? "" : "es"}
+                    </td>
+                    <td className="text-right py-3 tabular-nums">
+                      {s.costPerCookie > 0 ? (
+                        <span>
+                          {s.allKnown ? "" : "~"}
+                          {formatMoney(s.costPerCookie, 4)}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground italic text-xs">
+                          —
+                        </span>
+                      )}
+                    </td>
+                    <td className="text-right py-3 tabular-nums">
+                      <span
+                        className={cn(
+                          s.batchesPossible === 0 && "text-muted-foreground"
+                        )}
+                      >
+                        {s.batchesPossible}{" "}
+                        <span className="text-muted-foreground text-xs">
+                          batch{s.batchesPossible === 1 ? "" : "es"}
+                        </span>
                       </span>
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-xs text-muted-foreground">
-                    {s.limitingIngredient ?? "—"}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-5 py-3 text-xs text-muted-foreground">
+                      {s.limitingIngredient ?? "—"}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
             {summaries.some((s) => !s.allKnown) && (
               <tfoot>
@@ -241,6 +252,82 @@ function RecipeSummary({
               </tfoot>
             )}
           </table>
+        </div>
+
+        {/* Mobile — stacked cards per recipe */}
+        <div className="md:hidden p-3 space-y-3">
+          {summaries.map((s) => {
+            const tone = s.batchesPossible === 0
+              ? "bg-red-50 border-red-400"
+              : s.allKnown
+                ? "bg-card border-border"
+                : "bg-amber-50 border-amber-400";
+            return (
+              <div
+                key={s.recipe.id}
+                className={cn(
+                  "rounded-md border-2 p-3 transition-colors",
+                  tone
+                )}
+              >
+                <div className="space-y-0.5">
+                  <Link
+                    href="/recipes"
+                    className="font-medium hover:underline break-words"
+                  >
+                    {s.recipe.name}
+                  </Link>
+                  <div className="text-xs text-muted-foreground">
+                    {s.recipe.batches || 1} batch × {s.recipe.cookiesPerBatch}{" "}
+                    cookies
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 mt-3 text-sm">
+                  <span className="text-muted-foreground text-xs">
+                    Cost / batch
+                  </span>
+                  <span className="text-right font-medium tabular-nums">
+                    {s.costPerBatch > 0
+                      ? `${s.allKnown ? "" : "~"}${formatMoney(s.costPerBatch)}`
+                      : <span className="italic text-muted-foreground text-xs">not priced</span>}
+                  </span>
+                  <span className="text-muted-foreground text-xs">
+                    Cost / cookie
+                  </span>
+                  <span className="text-right font-medium tabular-nums">
+                    {s.costPerCookie > 0
+                      ? `${s.allKnown ? "" : "~"}${formatMoney(s.costPerCookie, 4)}`
+                      : <span className="italic text-muted-foreground text-xs">—</span>}
+                  </span>
+                  <span className="text-muted-foreground text-xs">
+                    Can make
+                  </span>
+                  <span className="text-right font-medium tabular-nums">
+                    {s.batchesPossible}{" "}
+                    <span className="text-muted-foreground text-xs">
+                      batch{s.batchesPossible === 1 ? "" : "es"}
+                    </span>
+                  </span>
+                  {s.limitingIngredient && (
+                    <>
+                      <span className="text-muted-foreground text-xs">
+                        Limited by
+                      </span>
+                      <span className="text-right text-xs text-muted-foreground">
+                        {s.limitingIngredient}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          {summaries.some((s) => !s.allKnown) && (
+            <p className="text-[11px] italic text-muted-foreground px-1">
+              * ~ prefix means partial total — some ingredients aren't
+              linked or priced yet.
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>

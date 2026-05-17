@@ -9,6 +9,7 @@ import { formatMoney, formatQty } from "@/lib/format";
 import { costForIngredient, findMatchingProduct, maxBatches } from "@/lib/recipe-math";
 import type { Category, Ingredient, Product, Recipe } from "@/lib/types";
 import { convertQuantity } from "@/lib/units";
+import { cn } from "@/lib/utils";
 import { IngredientProductPicker } from "./ingredient-product-picker";
 import { RecipeDialog } from "./recipe-dialog";
 
@@ -299,8 +300,15 @@ function IngredientCard({
         ? { ok: true as const, label: "Yes" }
         : { ok: false as const, label: `Short ${formatQty(shortPackages)} pkg` };
 
+  const tone = lineTone(line);
+
   return (
-    <div className="rounded-md border bg-card p-3 space-y-2">
+    <div
+      className={cn(
+        "rounded-md border-2 p-3 space-y-2 transition-colors",
+        tone.card
+      )}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="font-medium leading-snug break-words">
@@ -368,6 +376,33 @@ interface ComputedLine {
   stockReason: string;
   /** Short tag inline-displayed in place of "—" (e.g., "no price"). */
   reasonTag: string;
+}
+
+/** Classify an ingredient line by its state for visual treatment. */
+function lineTone(line: ComputedLine): { card: string; row: string } {
+  const { product, cost, shortPackages } = line;
+  if (!product) {
+    return {
+      card: "bg-stone-100 border-stone-400",
+      row: "bg-stone-50/50",
+    };
+  }
+  if (cost === null) {
+    return {
+      card: "bg-amber-50 border-amber-400",
+      row: "bg-amber-50/50",
+    };
+  }
+  if (shortPackages !== null && shortPackages > 0) {
+    return {
+      card: "bg-red-50 border-red-400",
+      row: "bg-red-50/50",
+    };
+  }
+  return {
+    card: "bg-card border-border",
+    row: "",
+  };
 }
 
 function computeLine(
@@ -534,8 +569,10 @@ function IngredientRow({
         ? { ok: true as const, label: "Yes" }
         : { ok: false as const, label: `Short ${formatQty(shortPackages)} pkg` };
 
+  const tone = lineTone(line);
+
   return (
-    <tr className="hover:bg-muted/20">
+    <tr className={cn("hover:bg-muted/20", tone.row)}>
       <td className="px-5 py-3 font-medium">{ingredient.name}</td>
       <td className="py-3 pr-3">
         <IngredientProductPicker

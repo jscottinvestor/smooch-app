@@ -27,6 +27,18 @@ const STATUS_STYLES = {
   ok: "bg-emerald-100 text-emerald-800 ring-1 ring-inset ring-emerald-200",
 } as const;
 
+const ROW_TONE = {
+  out: "bg-red-50/60",
+  low: "bg-amber-50/60",
+  ok: "",
+} as const;
+
+const CARD_TONE = {
+  out: "bg-red-50 border-red-400",
+  low: "bg-amber-50 border-amber-400",
+  ok: "bg-card border-border",
+} as const;
+
 export function InventoryTable({
   entries,
   categoryPaths,
@@ -194,7 +206,12 @@ function ProductCard({
     p.packageSize > 0 && p.price > 0 ? p.price / p.packageSize : null;
 
   return (
-    <div className="rounded-md border bg-card p-3">
+    <div
+      className={cn(
+        "rounded-md border-2 p-3 transition-colors",
+        CARD_TONE[stockKey]
+      )}
+    >
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0 space-y-1">
           <div className="font-medium leading-snug break-words">{p.name}</div>
@@ -272,7 +289,7 @@ function ProductRow({
     p.packageSize > 0 && p.price > 0 ? p.price / p.packageSize : null;
 
   return (
-    <TableRow className="hover:bg-muted/20">
+    <TableRow className={cn("hover:bg-muted/20", ROW_TONE[stockKey])}>
       <TableCell className={cn("font-medium pl-5", indent && "pl-10")}>
         {p.name}
       </TableCell>
