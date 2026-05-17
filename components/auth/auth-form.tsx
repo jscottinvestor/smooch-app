@@ -15,12 +15,14 @@ interface AuthFormProps {
 
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
-  const nextParam = useSearchParams().get("next") || "/dashboard";
+  const searchParams = useSearchParams();
+  const nextParam = searchParams.get("next") || "/dashboard";
+  const urlError = searchParams.get("error");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(urlError);
   const [signupSucceeded, setSignupSucceeded] = useState(false);
 
   async function onEmailSubmit(e: React.FormEvent) {

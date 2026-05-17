@@ -37,14 +37,20 @@ interface ProductDialogProps {
   defaultCategoryId?: string;
   /** When set, dialog opens in edit mode for this product. */
   product?: Product;
+  /** Existing store names from other products, fed into the Store dropdown. */
+  existingStores: string[];
   /** A single React element to render as the trigger. */
   children: React.ReactElement;
 }
+
+const NEW_STORE_VALUE = "__add_new_store__";
+const NO_STORE_VALUE = "__no_store__";
 
 export function ProductDialog({
   categoryPaths,
   defaultCategoryId,
   product,
+  existingStores,
   children,
 }: ProductDialogProps) {
   const router = useRouter();
@@ -60,6 +66,7 @@ export function ProductDialog({
     product?.categoryId ?? defaultCategoryId ?? ""
   );
   const [store, setStore] = useState(product?.store ?? "");
+  const [storeMode, setStoreMode] = useState<"select" | "new">("select");
   const [packageSize, setPackageSize] = useState(
     product ? String(product.packageSize) : ""
   );
@@ -92,6 +99,7 @@ export function ProductDialog({
       setStock("");
       setConversions([]);
     }
+    setStoreMode("select");
     setError(null);
     setConfirmDelete(false);
   }
@@ -212,11 +220,65 @@ export function ProductDialog({
             </Field>
 
             <Field label="Store">
-              <Input
-                value={store}
-                onChange={(e) => setStore(e.target.value)}
-                placeholder="e.g., Costco"
-              />
+              {storeMode === "select" ? (
+                <Select
+                  value={store || NO_STORE_VALUE}
+                  onValueChange={(v) => {
+                    if (v === NEW_STORE_VALUE) {
+                      setStoreMode("new");
+                      setStore("");
+                    } else if (v === NO_STORE_VALUE) {
+                      setStore("");
+                    } else if (v) {
+                      setStore(v);
+                    }
+                  }}
+                  items={[
+                    { value: NO_STORE_VALUE, label: "—" },
+                    ...existingStores.map((s) => ({ value: s, label: s })),
+                    { value: NEW_STORE_VALUE, label: "+ Add a new store…" },
+                  ]}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Pick a store" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NO_STORE_VALUE}>
+                      <span className="text-muted-foreground">—</span>
+                    </SelectItem>
+                    {existingStores.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value={NEW_STORE_VALUE}>
+                      <span className="text-primary font-medium">
+                        + Add a new store…
+                      </span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    value={store}
+                    onChange={(e) => setStore(e.target.value)}
+                    placeholder="New store name"
+                    autoFocus
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setStoreMode("select");
+                      setStore(product?.store ?? "");
+                    }}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
             </Field>
 
             <div className="grid grid-cols-2 gap-3">

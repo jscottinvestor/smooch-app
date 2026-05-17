@@ -42,9 +42,11 @@ const CARD_TONE = {
 export function InventoryTable({
   entries,
   categoryPaths,
+  existingStores,
 }: {
   entries: InventoryEntry[];
   categoryPaths: CategoryPath[];
+  existingStores: string[];
 }) {
   const rows: React.ReactNode[] = [];
   for (const e of entries) {
@@ -55,6 +57,7 @@ export function InventoryTable({
           product={e.product}
           indent={false}
           categoryPaths={categoryPaths}
+          existingStores={existingStores}
         />
       );
     } else if (e.type === "empty") {
@@ -70,6 +73,7 @@ export function InventoryTable({
             <ProductDialog
               categoryPaths={categoryPaths}
               defaultCategoryId={e.categoryId}
+              existingStores={existingStores}
             >
               <Button
                 variant="ghost"
@@ -98,6 +102,7 @@ export function InventoryTable({
             product={p}
             indent={true}
             categoryPaths={categoryPaths}
+            existingStores={existingStores}
           />
         );
       }
@@ -137,6 +142,7 @@ export function InventoryTable({
                 key={`mf-${e.product.id}`}
                 product={e.product}
                 categoryPaths={categoryPaths}
+                existingStores={existingStores}
               />
             );
           }
@@ -149,6 +155,7 @@ export function InventoryTable({
                 <ProductDialog
                   categoryPaths={categoryPaths}
                   defaultCategoryId={e.categoryId}
+                  existingStores={existingStores}
                 >
                   <Button
                     variant="ghost"
@@ -175,6 +182,7 @@ export function InventoryTable({
                   key={`mp-${p.id}`}
                   product={p}
                   categoryPaths={categoryPaths}
+                  existingStores={existingStores}
                 />
               ))}
             </div>
@@ -188,9 +196,11 @@ export function InventoryTable({
 function ProductCard({
   product: p,
   categoryPaths,
+  existingStores,
 }: {
   product: Product;
   categoryPaths: CategoryPath[];
+  existingStores: string[];
 }) {
   const stockKey: keyof typeof STATUS_STYLES =
     p.stock <= 0 ? "out" : p.stock < 0.25 ? "low" : "ok";
@@ -244,7 +254,7 @@ function ProductCard({
               History <PriceHistoryDialog product={p} />
             </span>
           )}
-          <ProductDialog categoryPaths={categoryPaths} product={p}>
+          <ProductDialog categoryPaths={categoryPaths} product={p} existingStores={existingStores}>
             <Button variant="ghost" size="icon-xs" title="Edit">
               <Pencil className="w-3.5 h-3.5" />
               <span className="sr-only">Edit</span>
@@ -276,10 +286,12 @@ function ProductRow({
   product: p,
   indent,
   categoryPaths,
+  existingStores,
 }: {
   product: Product;
   indent: boolean;
   categoryPaths: CategoryPath[];
+  existingStores: string[];
 }) {
   const stockKey: keyof typeof STATUS_STYLES =
     p.stock <= 0 ? "out" : p.stock < 0.25 ? "low" : "ok";
@@ -338,7 +350,7 @@ function ProductRow({
         )}
       </TableCell>
       <TableCell className="text-right pr-4">
-        <ProductDialog categoryPaths={categoryPaths} product={p}>
+        <ProductDialog categoryPaths={categoryPaths} product={p} existingStores={existingStores}>
           <Button variant="ghost" size="icon-xs" title="Edit">
             <Pencil className="w-3.5 h-3.5" />
             <span className="sr-only">Edit</span>

@@ -131,6 +131,15 @@ export function InventoryView({
     return topRank(la) - topRank(lb) || la.localeCompare(lb);
   });
 
+  const existingStores = (() => {
+    const set = new Set<string>();
+    for (const p of products) {
+      const s = p.store?.trim();
+      if (s) set.add(s);
+    }
+    return [...set].sort((a, b) => a.localeCompare(b));
+  })();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-2">
@@ -145,7 +154,10 @@ export function InventoryView({
               Manage categories
             </Button>
           </CategoriesDialog>
-          <ProductDialog categoryPaths={categoryPaths}>
+          <ProductDialog
+            categoryPaths={categoryPaths}
+            existingStores={existingStores}
+          >
             <Button size="sm">
               <Plus className="w-4 h-4" />
               New product
@@ -226,7 +238,11 @@ export function InventoryView({
               </span>
             </CardHeader>
             <CardContent className="p-0 border-t">
-              <InventoryTable entries={entries} categoryPaths={categoryPaths} />
+              <InventoryTable
+                entries={entries}
+                categoryPaths={categoryPaths}
+                existingStores={existingStores}
+              />
             </CardContent>
           </Card>
         );
