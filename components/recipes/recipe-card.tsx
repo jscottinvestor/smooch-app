@@ -135,16 +135,15 @@ export function RecipeCard({
       </CardHeader>
 
       <CardContent className="p-0 border-t">
-        <div className="overflow-x-auto">
+        {/* Desktop — 5-column table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="bg-muted/20 text-[11px] tracking-wide uppercase text-muted-foreground">
                 <th className="text-left font-normal px-5 py-2.5 w-[24%]">
                   Ingredient
                 </th>
-                <th className="text-left font-normal py-2.5 w-[32%]">
-                  Product
-                </th>
+                <th className="text-left font-normal py-2.5 w-[32%]">Product</th>
                 <th className="text-right font-normal py-2.5 w-[12%]">
                   Quantity
                 </th>
@@ -168,9 +167,7 @@ export function RecipeCard({
             <tfoot className="border-t">
               <tr className="bg-muted/10">
                 <td className="px-5 py-3.5 text-sm" colSpan={3}>
-                  <span className="text-muted-foreground">
-                    Total recipe cost
-                  </span>
+                  <span className="text-muted-foreground">Total recipe cost</span>
                 </td>
                 <td className="text-right py-3.5 font-medium tabular-nums">
                   {allKnown ? formatMoney(total) : "~" + formatMoney(total)}
@@ -179,9 +176,7 @@ export function RecipeCard({
               </tr>
               <tr>
                 <td className="px-5 py-2 text-sm" colSpan={3}>
-                  <span className="text-muted-foreground">
-                    Cost per cookie
-                  </span>
+                  <span className="text-muted-foreground">Cost per cookie</span>
                 </td>
                 <td className="text-right py-2 font-medium tabular-nums">
                   {allKnown
@@ -218,8 +213,145 @@ export function RecipeCard({
             </tfoot>
           </table>
         </div>
+
+        {/* Mobile — stacked ingredient cards by group */}
+        <div className="md:hidden">
+          {grouped.map(({ topName, items }) => (
+            <div key={`m-${topName ?? "_uncat"}`} className="border-t first:border-t-0">
+              <div className="px-4 pt-4 pb-1 font-display text-sm text-foreground/80">
+                {topName ? topName.toLowerCase() : "uncategorized"}
+                <span className="ml-2 text-xs text-muted-foreground font-sans tabular-nums">
+                  {items.length}
+                </span>
+              </div>
+              <div className="px-3 pb-3 space-y-2">
+                {items.map((line) => (
+                  <IngredientCard
+                    key={`mi-${line.ingredient.id}`}
+                    line={line}
+                    recipeId={recipeId}
+                    products={products}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+          <div className="border-t p-4 space-y-1.5 text-sm bg-muted/10">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Total recipe cost</span>
+              <span className="font-medium tabular-nums">
+                {allKnown ? formatMoney(total) : "~" + formatMoney(total)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Cost per cookie</span>
+              <span className="font-medium tabular-nums">
+                {allKnown
+                  ? formatMoney(costPerCookie, 4)
+                  : "~" + formatMoney(costPerCookie, 4)}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Batches possible</span>
+              <span className="font-medium tabular-nums">{batchesPossible}</span>
+            </div>
+            {limitingIngredient && batchesPossible < 100 && (
+              <div className="text-right text-[11px] text-muted-foreground">
+                limited by {limitingIngredient}
+              </div>
+            )}
+            {(someKnown || noneKnown) && (
+              <div className="text-[11px] italic text-muted-foreground pt-1">
+                * Partial total — some ingredients couldn't be priced.
+              </div>
+            )}
+          </div>
+        </div>
       </CardContent>
     </Card>
+  );
+}
+
+function IngredientCard({
+  line,
+  recipeId,
+  products,
+}: {
+  line: ComputedLine;
+  recipeId: string;
+  products: Product[];
+}) {
+  const {
+    ingredient,
+    scaledQty,
+    product,
+    cost,
+    shortPackages,
+    costReason,
+    stockReason,
+    reasonTag,
+  } = line;
+
+  const inStock =
+    shortPackages === null
+      ? null
+      : shortPackages <= 0
+        ? { ok: true as const, label: "Yes" }
+        : { ok: false as const, label: `Short ${formatQty(shortPackages)} pkg` };
+
+  return (
+    <div className="rounded-md border bg-card p-3 space-y-2">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="font-medium leading-snug break-words">
+            {ingredient.name}
+          </div>
+          <div className="text-xs text-muted-foreground tabular-nums mt-0.5">
+            {formatQty(scaledQty)} {ingredient.unit}
+          </div>
+        </div>
+        <div className="text-right shrink-0">
+          {cost === null ? (
+            <span
+              className="text-[11px] italic text-muted-foreground cursor-help underline decoration-dotted decoration-muted-foreground/40 underline-offset-2"
+              title={costReason || "Cost unavailable"}
+            >
+              {reasonTag || "—"}
+            </span>
+          ) : (
+            <div className="font-medium tabular-nums">{formatMoney(cost)}</div>
+          )}
+          {inStock === null ? (
+            <span
+              className="text-[11px] italic text-muted-foreground cursor-help underline decoration-dotted decoration-muted-foreground/40 underline-offset-2 block mt-0.5"
+              title={stockReason || "Stock unavailable"}
+            >
+              {reasonTag || "—"}
+            </span>
+          ) : inStock.ok ? (
+            <span
+              className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-800 ring-1 ring-inset ring-emerald-200 px-2 py-0.5 text-[10px] font-medium mt-1"
+              title={`Have ${formatQty(product?.stock ?? 0)} pkg in stock`}
+            >
+              Yes
+            </span>
+          ) : (
+            <span
+              className="inline-flex items-center rounded-full bg-red-100 text-red-700 ring-1 ring-inset ring-red-200 px-2 py-0.5 text-[10px] font-medium mt-1"
+              title={`Need ${formatQty((shortPackages ?? 0) + (product?.stock ?? 0))} pkg; have ${formatQty(product?.stock ?? 0)} pkg`}
+            >
+              {inStock.label}
+            </span>
+          )}
+        </div>
+      </div>
+      <IngredientProductPicker
+        recipeId={recipeId}
+        ingredientId={ingredient.id}
+        productId={ingredient.productId}
+        products={products}
+      />
+    </div>
   );
 }
 

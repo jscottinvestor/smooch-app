@@ -172,37 +172,54 @@ function ReceiptRow({
       </div>
 
       {expanded && (
-        <div className="pl-6 space-y-1 mt-2">
+        <div className="pl-6 mt-2 space-y-2 sm:space-y-1">
           {receipt.lines.map((l, i) => {
             const product = l.productId
               ? products.find((p) => p.id === l.productId)
               : null;
+            const actionClass = cn(
+              l.action === "updated" && "text-emerald-700",
+              l.action === "created" && "text-emerald-700",
+              l.action === "unchanged" && "text-muted-foreground",
+              l.action === "skipped" && "text-muted-foreground italic",
+              l.action === "ignored" && "text-muted-foreground italic"
+            );
             return (
               <div
                 key={`${receipt.id}-${i}`}
-                className="flex items-center gap-2 text-xs"
+                className="text-xs border-b border-border/40 pb-1.5 last:border-b-0 sm:border-b-0 sm:pb-0"
               >
-                <span className="font-mono flex-1 truncate text-muted-foreground">
-                  {l.rawName}
-                </span>
-                <span className="tabular-nums w-14 text-right">
-                  {formatMoney(l.price)}
-                </span>
-                <span
-                  className={cn(
-                    "w-20 text-right",
-                    l.action === "updated" && "text-emerald-700",
-                    l.action === "created" && "text-emerald-700",
-                    l.action === "unchanged" && "text-muted-foreground",
-                    l.action === "skipped" && "text-muted-foreground italic",
-                    l.action === "ignored" && "text-muted-foreground italic"
+                {/* Desktop — single row, fixed columns */}
+                <div className="hidden sm:flex items-center gap-2">
+                  <span className="font-mono flex-1 truncate text-muted-foreground">
+                    {l.rawName}
+                  </span>
+                  <span className="tabular-nums w-14 text-right">
+                    {formatMoney(l.price)}
+                  </span>
+                  <span className={cn("w-20 text-right", actionClass)}>
+                    {l.action}
+                  </span>
+                  <span className="w-32 text-right text-muted-foreground truncate">
+                    {product?.name ?? ""}
+                  </span>
+                </div>
+
+                {/* Mobile — stacked */}
+                <div className="sm:hidden space-y-0.5">
+                  <div className="font-mono text-muted-foreground break-words">
+                    {l.rawName}
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="tabular-nums">{formatMoney(l.price)}</span>
+                    <span className={actionClass}>{l.action}</span>
+                  </div>
+                  {product && (
+                    <div className="text-muted-foreground truncate">
+                      → {product.name}
+                    </div>
                   )}
-                >
-                  {l.action}
-                </span>
-                <span className="w-32 text-right text-muted-foreground truncate">
-                  {product?.name ?? ""}
-                </span>
+                </div>
               </div>
             );
           })}
