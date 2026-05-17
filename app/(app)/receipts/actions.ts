@@ -5,7 +5,11 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { revalidatePath } from "next/cache";
 import { productFromRow, type ProductRow } from "@/lib/db/mappers";
 import { deleteReceipt, insertReceipt, updateReceipt } from "@/lib/db/receipts";
-import { findCanonicalStoreName, rememberStoreAlias } from "@/lib/db/stores";
+import {
+  ensureStoreExists,
+  findCanonicalStoreName,
+  rememberStoreAlias,
+} from "@/lib/db/stores";
 import { checkReceiptLimit } from "@/lib/limits";
 import { normalizeAlias } from "@/lib/matching";
 import {
@@ -74,6 +78,12 @@ export async function applyReceiptAction(
   if (!input.existingReceiptId) {
     const limit = await checkReceiptLimit(supabase);
     if (!limit.allowed) return { ok: false, error: limit.error! };
+  }
+
+  // Register the receipt's store in the stores table if it's new — so
+  // it shows up in Manage Stores and the product dropdowns next time.
+  if (input.store?.trim()) {
+    await ensureStoreExists(input.store);
   }
 
   const summary: ApplyReceiptSummary = {
@@ -509,6 +519,10 @@ export async function saveReceiptForLaterAction(
     if (!input.existingReceiptId) {
       const limit = await checkReceiptLimit(await getServerSupabase());
       if (!limit.allowed) return { ok: false, error: limit.error! };
+    }
+
+    if (input.store?.trim()) {
+      await ensureStoreExists(input.store);
     }
 
     const receiptLines: ReceiptLine[] = input.lines.map((line) => ({

@@ -17,6 +17,7 @@ import {
 } from "@/lib/db/products";
 import {
   deleteStore,
+  ensureStoreExists,
   insertStore,
   renameStore,
 } from "@/lib/db/stores";
@@ -62,6 +63,7 @@ export async function createProductAction(
   if (!limit.allowed) return { ok: false, error: limit.error! };
 
   try {
+    if (input.store) await ensureStoreExists(input.store);
     await insertProduct({ ...input, name });
     revalidatePath("/inventory");
     return { ok: true };
@@ -96,6 +98,7 @@ export async function updateProductAction(
   const err = validateProductInput(input);
   if (err) return { ok: false, error: err };
   try {
+    if (input.store) await ensureStoreExists(input.store);
     await updateProduct(id, { ...input, name: input.name.trim() });
     revalidatePath("/inventory");
     return { ok: true };

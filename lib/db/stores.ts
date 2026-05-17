@@ -58,6 +58,24 @@ export async function insertStore(name: string): Promise<void> {
 }
 
 /**
+ * Idempotent: insert a stores row for `name` if one doesn't already exist
+ * for this user. Used when a product or receipt save introduces a brand-
+ * new store name that wasn't picked from the Manage Stores list — we want
+ * that name to show up in the Manage Stores list and dropdowns going
+ * forward, but a duplicate name shouldn't fail the parent save.
+ */
+export async function ensureStoreExists(name: string): Promise<void> {
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  const supabase = await getServerSupabase();
+  const { error } = await supabase.from("stores").insert({ name: trimmed });
+  // 23505 = unique_violation. Already exists is the happy path here.
+  if (error && error.code !== "23505") {
+    console.warn(`ensureStoreExists(${trimmed}) failed:`, error.message);
+  }
+}
+
+/**
  * Rename a store. Updates the stores row AND every product currently
  * tagged with the old name so the rename cascades. Also pushes the old
  * name into the row's `aliases` array so receipt OCR for that old
