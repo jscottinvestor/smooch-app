@@ -16,7 +16,7 @@ export function TabBar({ rightSlot }: { rightSlot?: React.ReactNode }) {
 
   return (
     <div className="flex flex-wrap items-end justify-between gap-y-2 border-b border-border">
-      <nav className="flex gap-6 overflow-x-auto">
+      <nav className="flex gap-6">
         {TABS.map((tab) => {
           const active = pathname.startsWith(tab.href);
           return (
