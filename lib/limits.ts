@@ -14,7 +14,7 @@ export const FREE_TIER = {
 
 const UNLIMITED_EMAILS = new Set<string>([
   // The author's account — unlimited so seeding and testing aren't blocked.
-  "j@bardowninvestments.com",
+  "j@jscott.com",
 ]);
 
 export interface LimitCheck {

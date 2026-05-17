@@ -18,7 +18,12 @@ interface SeedRecipe {
   ingredients: SeedIngredient[];
 }
 
-export const SEED_RECIPES: SeedRecipe[] = [
+// Recipe seeding intentionally disabled — new accounts start with no
+// recipes. The data below stays as reference for the test/demo seed
+// shape; the function below short-circuits if the array is empty.
+export const SEED_RECIPES: SeedRecipe[] = [];
+
+const _UNUSED_RECIPES: SeedRecipe[] = [
   {
     name: "Chunky Chocolate Chip",
     batches: 1,
@@ -77,6 +82,8 @@ export const SEED_RECIPES: SeedRecipe[] = [
 export async function seedRecipesIfEmpty(
   supabase: SupabaseClient
 ): Promise<void> {
+  if (SEED_RECIPES.length === 0) return; // recipe seeding disabled
+
   const { count, error: countErr } = await supabase
     .from("recipes")
     .select("*", { count: "exact", head: true });

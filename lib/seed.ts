@@ -121,39 +121,24 @@ export async function seedDatabaseIfEmpty(supabase: SupabaseClient): Promise<voi
   const topIdByName = new Map<string, string>();
   for (const r of topRows!) topIdByName.set(r.name as string, r.id as string);
 
-  // 2. Each catalog entry: maybe create sub-category, maybe insert products.
+  // 2. Each catalog entry: create the sub-category if it has one.
+  //    Products are intentionally NOT seeded — new accounts start with
+  //    empty inventory, empty recipes, and empty receipts. Only the
+  //    category skeleton (DRY / WET / MIX-INS + sub-categories like
+  //    Sugar, Flour, Butter, Oil, etc.) is pre-filled.
   for (const entry of SEED_CATALOG) {
     const topId = topIdByName.get(entry.topLevel);
     if (!topId) continue;
 
-    if (entry.productsDirect) {
-      const inserts = entry.productsDirect.map((p) => ({
-        name: p.name,
-        category_id: topId,
-        package_unit: p.unit,
-      }));
-      const { error } = await supabase.from("products").insert(inserts);
-      if (error) throw new Error(`seed productsDirect: ${error.message}`);
-      continue;
-    }
+    // productsDirect entries had no sub-category — only direct products.
+    // With products turned off, there's nothing to do for these.
+    if (entry.productsDirect) continue;
 
     if (!entry.category) continue;
 
-    const { data: catRow, error: catErr } = await supabase
+    const { error: catErr } = await supabase
       .from("categories")
-      .insert({ name: entry.category, parent_id: topId })
-      .select("id")
-      .single();
+      .insert({ name: entry.category, parent_id: topId });
     if (catErr) throw new Error(`seed category ${entry.category}: ${catErr.message}`);
-
-    if (entry.categoryOnly || !entry.products?.length) continue;
-
-    const inserts = entry.products.map((p) => ({
-      name: p.name,
-      category_id: catRow.id,
-      package_unit: p.unit,
-    }));
-    const { error } = await supabase.from("products").insert(inserts);
-    if (error) throw new Error(`seed products ${entry.category}: ${error.message}`);
   }
 }
