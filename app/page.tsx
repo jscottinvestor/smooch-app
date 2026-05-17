@@ -13,7 +13,22 @@ import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { getServerSupabase } from "@/lib/supabase/server";
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ code?: string; next?: string }>;
+}) {
+  // Supabase's OAuth flow lands here with `?code=...` when the configured
+  // redirect URL doesn't include /auth/callback — Supabase falls back to
+  // the Site URL. Forward to /auth/callback so the session gets minted.
+  const params = await searchParams;
+  if (params.code) {
+    const next = params.next || "/dashboard";
+    redirect(
+      `/auth/callback?code=${encodeURIComponent(params.code)}&next=${encodeURIComponent(next)}`
+    );
+  }
+
   // Already signed in? Skip the marketing page and go straight to the app.
   const supabase = await getServerSupabase();
   const {
