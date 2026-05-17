@@ -118,7 +118,7 @@ export function InventoryTable({
               <TableHead className="text-right">$/unit</TableHead>
               <TableHead>Stock</TableHead>
               <TableHead className="text-center">Status</TableHead>
-              <TableHead>History</TableHead>
+              <TableHead>Hist.</TableHead>
               <TableHead className="pr-4" />
             </TableRow>
           </TableHeader>
@@ -195,7 +195,7 @@ function ProductCard({
   const stockKey: keyof typeof STATUS_STYLES =
     p.stock <= 0 ? "out" : p.stock < 0.25 ? "low" : "ok";
   const stockLabel =
-    stockKey === "out" ? "Out" : stockKey === "low" ? "Low" : "OK";
+    stockKey === "out" ? "Out" : stockKey === "low" ? "Low" : "In Stock";
 
   const meta: string[] = [];
   if (p.store) meta.push(p.store);
@@ -283,7 +283,7 @@ function ProductRow({
 }) {
   const stockKey: keyof typeof STATUS_STYLES =
     p.stock <= 0 ? "out" : p.stock < 0.25 ? "low" : "ok";
-  const stockLabel = stockKey === "out" ? "Out" : stockKey === "low" ? "Low" : "OK";
+  const stockLabel = stockKey === "out" ? "Out" : stockKey === "low" ? "Low" : "In Stock";
 
   const pricePerUnit =
     p.packageSize > 0 && p.price > 0 ? p.price / p.packageSize : null;
