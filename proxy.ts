@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 const PUBLIC_PREFIXES = ["/login", "/signup", "/auth"];
 
+// The marketing home page at "/" is public for unauthed visitors. Signed-in
+// users are bounced to /dashboard below.
+const PUBLIC_EXACT = new Set(["/"]);
+
 export async function proxy(req: NextRequest) {
   let response = NextResponse.next({ request: req });
 
@@ -34,9 +38,11 @@ export async function proxy(req: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = req.nextUrl;
-  const isPublic = PUBLIC_PREFIXES.some(
-    (p) => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p)
-  );
+  const isPublic =
+    PUBLIC_EXACT.has(pathname) ||
+    PUBLIC_PREFIXES.some(
+      (p) => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p)
+    );
 
   if (!user && !isPublic) {
     const incomingCookieNames = req.cookies
