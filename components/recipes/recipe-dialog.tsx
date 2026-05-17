@@ -316,13 +316,13 @@ export function RecipeDialog({
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger render={children} />
-        <DialogContent className="sm:max-w-lg max-h-[90vh] max-w-[calc(100%-1rem)] overflow-y-auto overflow-x-hidden">
-          <DialogHeader>
-            <DialogTitle>
+        <DialogContent className="max-w-[calc(100vw-0.5rem)] sm:max-w-lg max-h-[90vh] overflow-y-auto overflow-x-hidden grid-cols-[minmax(0,1fr)]">
+          <DialogHeader className="min-w-0">
+            <DialogTitle className="truncate">
               {isEdit ? `Edit ${recipe.name}` : "New recipe"}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={onSubmit} className="space-y-4 min-w-0">
             {!isEdit && (
               <PhotoImport
                 cameraInputRef={cameraInputRef}
@@ -544,8 +544,8 @@ function IngredientEditRow({
   const currentFilterValue = draft.filterCategoryId ?? ALL_CATEGORIES;
 
   return (
-    <div className="rounded-md border border-border bg-muted/20 p-2 space-y-1.5 min-w-0">
-      <div className="flex items-center gap-1.5 min-w-0">
+    <div className="rounded-md border border-border bg-muted/20 p-2 space-y-1.5 min-w-0 max-w-full">
+      <div className="flex items-center gap-1.5 min-w-0 max-w-full">
         <Input
           type="number"
           step="0.01"
