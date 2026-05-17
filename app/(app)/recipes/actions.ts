@@ -10,6 +10,8 @@ import {
   updateRecipe,
   type NewRecipeInput,
 } from "@/lib/db/recipes";
+import { listProducts } from "@/lib/db/products";
+import { bestProductMatch } from "@/lib/matching";
 import {
   RECIPE_OCR_SYSTEM_PROMPT,
   RecipeOcrSchema,
@@ -115,6 +117,62 @@ export async function deleteRecipeAction(id: string): Promise<ActionResult> {
     return {
       ok: false,
       error: e instanceof Error ? e.message : "Delete failed",
+    };
+  }
+}
+
+export type AutoMatchResult =
+  | { ok: true; matched: number; checked: number }
+  | { ok: false; error: string };
+
+/**
+ * Run the same matcher used at photo-import time over every ingredient
+ * in this recipe that isn't already linked to a product. Persists the
+ * matches. Lets users retry auto-matching for recipes they typed by
+ * hand, or for ones where the original auto-match missed.
+ */
+export async function autoMatchRecipeAction(
+  recipeId: string
+): Promise<AutoMatchResult> {
+  const AUTO_PICK_THRESHOLD = 0.6;
+  try {
+    const supabase = await getServerSupabase();
+    const { data: row, error } = await supabase
+      .from("recipes")
+      .select("ingredients")
+      .eq("id", recipeId)
+      .single();
+    if (error || !row) {
+      return { ok: false, error: error?.message ?? "Recipe not found" };
+    }
+
+    const products = await listProducts();
+    const ingredients = (row.ingredients as Ingredient[]) ?? [];
+    let matched = 0;
+    let checked = 0;
+
+    const next: Ingredient[] = ingredients.map((ing) => {
+      if (ing.productId) return ing;
+      checked += 1;
+      const { product, score } = bestProductMatch(ing.name, null, products);
+      if (product && score >= AUTO_PICK_THRESHOLD) {
+        matched += 1;
+        return { ...ing, productId: product.id };
+      }
+      return ing;
+    });
+
+    if (matched > 0) {
+      await setRecipeIngredients(recipeId, next);
+      revalidatePath("/recipes");
+      revalidatePath("/dashboard");
+    }
+
+    return { ok: true, matched, checked };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "Auto-match failed",
     };
   }
 }

@@ -1,10 +1,12 @@
 "use client";
 
-import { AlertTriangle, Pencil, RotateCcw } from "lucide-react";
-import { useState } from "react";
+import { AlertTriangle, Loader2, Pencil, RotateCcw, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { autoMatchRecipeAction } from "@/app/(app)/recipes/actions";
 import { formatMoney, formatQty } from "@/lib/format";
 import { costForIngredient, findMatchingProduct, maxBatches } from "@/lib/recipe-math";
 import type { Category, Ingredient, Product, Recipe } from "@/lib/types";
@@ -66,6 +68,39 @@ export function RecipeCard({
   // Group lines by top-level category
   const grouped = groupByTopLevel(lines, categories);
   const recipeId = recipe.id;
+
+  const router = useRouter();
+  const [matchPending, startMatchTransition] = useTransition();
+  const [matchToast, setMatchToast] = useState<
+    | { kind: "success" | "info" | "error"; message: string }
+    | null
+  >(null);
+
+  function tryAutoMatch() {
+    setMatchToast(null);
+    startMatchTransition(async () => {
+      const res = await autoMatchRecipeAction(recipeId);
+      if (!res.ok) {
+        setMatchToast({ kind: "error", message: res.error });
+        return;
+      }
+      if (res.matched === 0) {
+        setMatchToast({
+          kind: "info",
+          message:
+            res.checked === 0
+              ? "Nothing to match — every ingredient is already linked."
+              : "No confident matches. Try linking ingredients manually.",
+        });
+        return;
+      }
+      setMatchToast({
+        kind: "success",
+        message: `Matched ${res.matched} of ${res.checked} ingredient${res.checked === 1 ? "" : "s"}.`,
+      });
+      router.refresh();
+    });
+  }
 
   return (
     <Card className="overflow-hidden shadow-sm shadow-foreground/[0.03]">
@@ -131,20 +166,70 @@ export function RecipeCard({
         {someKnown && (
           <div className="mt-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-            <p>
-              Some ingredients aren't linked to products yet — totals shown
-              with{" "}
-              <span className="font-medium">~</span> are partial.
-            </p>
+            <div className="flex-1 flex items-start justify-between gap-3 flex-wrap">
+              <p>
+                Some ingredients aren't linked to products yet — totals shown
+                with{" "}
+                <span className="font-medium">~</span> are partial.
+              </p>
+              <Button
+                type="button"
+                size="xs"
+                variant="outline"
+                onClick={tryAutoMatch}
+                disabled={matchPending}
+                className="shrink-0"
+              >
+                {matchPending ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <Sparkles className="w-3 h-3" />
+                )}
+                Try auto-match
+              </Button>
+            </div>
           </div>
         )}
         {noneKnown && (
           <div className="mt-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-            <p>
-              Link each ingredient to a product (column 2) to see cost-per-product
-              and stock availability.
-            </p>
+            <div className="flex-1 flex items-start justify-between gap-3 flex-wrap">
+              <p>
+                Link each ingredient to a product (column 2) to see
+                cost-per-product and stock availability.
+              </p>
+              <Button
+                type="button"
+                size="xs"
+                variant="outline"
+                onClick={tryAutoMatch}
+                disabled={matchPending}
+                className="shrink-0"
+              >
+                {matchPending ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <Sparkles className="w-3 h-3" />
+                )}
+                Try auto-match
+              </Button>
+            </div>
+          </div>
+        )}
+        {matchToast && (
+          <div
+            className={cn(
+              "mt-2 rounded-md border px-3 py-2 text-xs",
+              matchToast.kind === "success" &&
+                "border-emerald-200 bg-emerald-50 text-emerald-900",
+              matchToast.kind === "info" &&
+                "border-stone-200 bg-stone-50 text-stone-800",
+              matchToast.kind === "error" &&
+                "border-red-200 bg-red-50 text-red-900"
+            )}
+            role="status"
+          >
+            {matchToast.message}
           </div>
         )}
       </CardHeader>
