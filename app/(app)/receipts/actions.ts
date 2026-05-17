@@ -5,7 +5,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { revalidatePath } from "next/cache";
 import { productFromRow, type ProductRow } from "@/lib/db/mappers";
 import { deleteReceipt, insertReceipt, updateReceipt } from "@/lib/db/receipts";
-import { findCanonicalStoreName } from "@/lib/db/stores";
+import { findCanonicalStoreName, rememberStoreAlias } from "@/lib/db/stores";
 import { normalizeAlias } from "@/lib/matching";
 import {
   OCR_SYSTEM_PROMPT,
@@ -40,6 +40,10 @@ export interface ApplyLineInput {
 export interface ApplyReceiptInput {
   date: string;
   store: string;
+  /** Original OCR text for the store, if this receipt came from a photo.
+   * When `store` (what the user finalized) differs from this, we record
+   * `ocrStore` as an alias of `store` so future scans auto-canonicalize. */
+  ocrStore?: string;
   total: number | null;
   lines: ApplyLineInput[];
   /** If set, update this existing receipt row instead of inserting a new one. */
@@ -302,6 +306,22 @@ export async function applyReceiptAction(
     };
   }
 
+  // Learn an alias if the user edited the OCR'd store name on the review
+  // form. Quietly skipped when names match (no-op), when no canonical
+  // store exists yet for the chosen name, or when ocrStore wasn't set
+  // (e.g., paste-text flow without OCR).
+  if (
+    input.ocrStore &&
+    input.ocrStore.trim() &&
+    input.ocrStore.trim().toLowerCase() !== input.store.trim().toLowerCase()
+  ) {
+    try {
+      await rememberStoreAlias(input.store.trim(), input.ocrStore.trim());
+    } catch (e) {
+      console.warn("[receipts] rememberStoreAlias failed", e);
+    }
+  }
+
   revalidatePath("/inventory");
   revalidatePath("/recipes");
   revalidatePath("/dashboard");
@@ -408,7 +428,8 @@ export async function parseReceiptImageAction(
     // If the user has previously renamed this store (or one of its aliases
     // matches), substitute the current canonical name so the review screen
     // shows what they call it today, not the raw text from the receipt.
-    let storeText = parsed.store || "";
+    const ocrStoreText = parsed.store || "";
+    let storeText = ocrStoreText;
     if (storeText) {
       const canonical = await findCanonicalStoreName(storeText);
       if (canonical) storeText = canonical;
@@ -416,6 +437,7 @@ export async function parseReceiptImageAction(
 
     const result: ParsedReceipt = {
       store: storeText,
+      ocrStore: ocrStoreText,
       date: parsed.date || new Date().toISOString().slice(0, 10),
       total: parsed.total,
       items: consolidateItems(

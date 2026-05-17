@@ -107,6 +107,49 @@ export async function renameStore(id: string, newName: string): Promise<void> {
     .update({ store: trimmed })
     .eq("store", oldName);
   if (prodErr) throw new Error(`renameStore (products): ${prodErr.message}`);
+
+  // Receipts also carry the store name; cascade the rename there too so the
+  // Receipts tab and per-store totals stay consistent.
+  const { error: recErr } = await supabase
+    .from("receipts")
+    .update({ store: trimmed })
+    .eq("store", oldName);
+  if (recErr) throw new Error(`renameStore (receipts): ${recErr.message}`);
+}
+
+/**
+ * Append `text` to the aliases list of the store with canonical name
+ * `canonicalName`. Used after the user accepts a receipt where the OCR'd
+ * store text differs from what they finalized in the review form — we
+ * silently record the correction so future scans match automatically.
+ *
+ * Silent no-op (not an error) when:
+ *   - text is empty, or already equals canonicalName case-insensitively
+ *   - no store with that canonical name exists
+ *   - the alias is already in the list
+ */
+export async function rememberStoreAlias(
+  canonicalName: string,
+  text: string
+): Promise<void> {
+  const aliasText = text.trim();
+  const canonical = canonicalName.trim();
+  if (!aliasText || !canonical) return;
+  if (aliasText.toLowerCase() === canonical.toLowerCase()) return;
+
+  const supabase = await getServerSupabase();
+  const { data: store, error: getErr } = await supabase
+    .from("stores")
+    .select("id, aliases")
+    .eq("name", canonical)
+    .maybeSingle();
+  if (getErr || !store) return;
+
+  const existing = (store.aliases as string[] | null) ?? [];
+  if (existing.some((a) => a.toLowerCase() === aliasText.toLowerCase())) return;
+
+  const merged = [...existing, aliasText];
+  await supabase.from("stores").update({ aliases: merged }).eq("id", store.id);
 }
 
 /**

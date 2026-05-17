@@ -48,6 +48,9 @@ export interface ReviewLine {
 
 export interface ReviewState {
   store: string;
+  /** Raw OCR text for the store, captured at parse time. Used to learn
+   * an alias if the user edits `store` before applying. */
+  ocrStore?: string;
   date: string;
   total: number | null;
   lines: ReviewLine[];
@@ -113,6 +116,7 @@ export function ReceiptReview({
     return {
       date: state.date,
       store: state.store.trim(),
+      ocrStore: state.ocrStore,
       total: state.total,
       existingReceiptId: state.existingReceiptId ?? null,
       lines: state.lines.map<ApplyLineInput>((l) => ({

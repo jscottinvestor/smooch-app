@@ -34,6 +34,10 @@ export interface ParsedReceiptItem {
 
 export interface ParsedReceipt {
   store: string;
+  /** Raw store text exactly as it appeared on the receipt (before any
+   * canonical-store lookup). Used to learn aliases when the user edits
+   * the store on the review form. Empty when not from OCR. */
+  ocrStore?: string;
   date: string; // YYYY-MM-DD
   total: number | null;
   items: ParsedReceiptItem[];

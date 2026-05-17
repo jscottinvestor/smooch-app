@@ -54,6 +54,7 @@ export function ReceiptsView({
     });
     setReview({
       store: parsed.store,
+      ocrStore: parsed.ocrStore,
       date: parsed.date,
       total: parsed.total,
       lines,
