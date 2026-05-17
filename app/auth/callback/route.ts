@@ -1,12 +1,17 @@
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
-import { getServerSupabase } from "@/lib/supabase/server";
 
 /**
- * Handles two redirect cases:
- *   - OAuth (Google) returns ?code=... — we exchange it for a session cookie.
- *   - Email-verification link returns ?code=... too — same exchange flow.
+ * Handles OAuth (Google) and email-verification redirects from Supabase.
  *
- * After successful exchange, we send the user to `?next=` (default /dashboard).
+ * Both flows arrive here with `?code=...`. We exchange the code for a
+ * session, set the auth cookies onto the redirect response itself (not via
+ * next/headers cookies()), then redirect to `?next=` (default /dashboard).
+ *
+ * Setting cookies on a fresh NextResponse.redirect is critical: if we use
+ * cookies() from next/headers inside a route handler that returns its own
+ * NextResponse, the cookies don't propagate onto that response and the
+ * user lands logged-out — which causes a "log in twice" loop.
  */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -20,15 +25,46 @@ export async function GET(request: Request) {
     );
   }
 
-  if (code) {
-    const supabase = await getServerSupabase();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (error) {
-      return NextResponse.redirect(
-        `${origin}/login?error=${encodeURIComponent(error.message)}`
-      );
-    }
+  if (!code) {
+    return NextResponse.redirect(`${origin}${next}`);
   }
 
-  return NextResponse.redirect(`${origin}${next}`);
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anon) {
+    return new NextResponse("Supabase env vars not configured", { status: 500 });
+  }
+
+  // Pre-allocate the redirect response so we can attach Set-Cookie headers
+  // onto IT (Supabase calls setAll while exchangeCodeForSession runs).
+  const response = NextResponse.redirect(`${origin}${next}`);
+
+  const supabase = createServerClient(url, anon, {
+    cookies: {
+      getAll() {
+        return request.headers
+          .get("cookie")
+          ?.split(";")
+          .map((c) => {
+            const [name, ...rest] = c.trim().split("=");
+            return { name, value: rest.join("=") };
+          })
+          .filter((c) => c.name) ?? [];
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          response.cookies.set(name, value, options);
+        });
+      },
+    },
+  });
+
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  if (error) {
+    return NextResponse.redirect(
+      `${origin}/login?error=${encodeURIComponent(error.message)}`
+    );
+  }
+
+  return response;
 }
