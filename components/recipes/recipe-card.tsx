@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { autoMatchRecipeAction } from "@/app/(app)/recipes/actions";
+import { buildCategoryPaths, type CategoryPath } from "@/lib/category-paths";
 import { formatMoney, formatQty } from "@/lib/format";
 import { costForIngredient, findMatchingProduct, maxBatches } from "@/lib/recipe-math";
 import type { Category, Ingredient, Product, Recipe } from "@/lib/types";
@@ -68,6 +69,17 @@ export function RecipeCard({
   // Group lines by top-level category
   const grouped = groupByTopLevel(lines, categories);
   const recipeId = recipe.id;
+
+  // Shared inputs for the New-product dialog opened from each ingredient
+  // picker. Computed once at the recipe level since they don't vary per row.
+  const categoryPaths = buildCategoryPaths(categories);
+  const existingStores = Array.from(
+    new Set(
+      products
+        .map((p) => p.store?.trim())
+        .filter((s): s is string => !!s)
+    )
+  ).sort((a, b) => a.localeCompare(b));
 
   const router = useRouter();
   const [matchPending, startMatchTransition] = useTransition();
@@ -261,6 +273,8 @@ export function RecipeCard({
                   items={items}
                   recipeId={recipeId}
                   products={products}
+                  categoryPaths={categoryPaths}
+                  existingStores={existingStores}
                 />
               ))}
             </tbody>
@@ -337,6 +351,8 @@ export function RecipeCard({
                     line={line}
                     recipeId={recipeId}
                     products={products}
+                    categoryPaths={categoryPaths}
+                    existingStores={existingStores}
                   />
                 ))}
               </div>
@@ -382,10 +398,14 @@ function IngredientCard({
   line,
   recipeId,
   products,
+  categoryPaths,
+  existingStores,
 }: {
   line: ComputedLine;
   recipeId: string;
   products: Product[];
+  categoryPaths: CategoryPath[];
+  existingStores: string[];
 }) {
   const {
     ingredient,
@@ -461,8 +481,11 @@ function IngredientCard({
       <IngredientProductPicker
         recipeId={recipeId}
         ingredientId={ingredient.id}
+        ingredientName={ingredient.name}
         productId={ingredient.productId}
         products={products}
+        categoryPaths={categoryPaths}
+        existingStores={existingStores}
       />
     </div>
   );
@@ -616,11 +639,15 @@ function GroupSection({
   items,
   recipeId,
   products,
+  categoryPaths,
+  existingStores,
 }: {
   topName: string | null;
   items: ComputedLine[];
   recipeId: string;
   products: Product[];
+  categoryPaths: CategoryPath[];
+  existingStores: string[];
 }) {
   const tint = groupTint(topName);
   return (
@@ -643,6 +670,8 @@ function GroupSection({
           recipeId={recipeId}
           products={products}
           groupTint={tint}
+          categoryPaths={categoryPaths}
+          existingStores={existingStores}
         />
       ))}
     </>
@@ -654,11 +683,15 @@ function IngredientRow({
   recipeId,
   products,
   groupTint: groupTintClass,
+  categoryPaths,
+  existingStores,
 }: {
   line: ComputedLine;
   recipeId: string;
   products: Product[];
   groupTint?: string;
+  categoryPaths: CategoryPath[];
+  existingStores: string[];
 }) {
   const {
     ingredient,
@@ -687,8 +720,11 @@ function IngredientRow({
         <IngredientProductPicker
           recipeId={recipeId}
           ingredientId={ingredient.id}
+          ingredientName={ingredient.name}
           productId={ingredient.productId}
           products={products}
+          categoryPaths={categoryPaths}
+          existingStores={existingStores}
         />
       </td>
       <td className="text-right py-3 tabular-nums">

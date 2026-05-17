@@ -35,12 +35,19 @@ import { cn } from "@/lib/utils";
 interface ProductDialogProps {
   categoryPaths: CategoryPath[];
   defaultCategoryId?: string;
+  /** Pre-fill the Name field in create mode (e.g. from a recipe ingredient). */
+  defaultName?: string;
   /** When set, dialog opens in edit mode for this product. */
   product?: Product;
   /** Existing store names from other products, fed into the Store dropdown. */
   existingStores: string[];
-  /** A single React element to render as the trigger. */
-  children: React.ReactElement;
+  /** External open-state control. When provided, internal state is bypassed. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Fires after a successful create with the new product's id. */
+  onCreated?: (productId: string) => void;
+  /** Trigger element. Optional when externally controlled via `open`. */
+  children?: React.ReactElement;
 }
 
 const NEW_STORE_VALUE = "__add_new_store__";
@@ -49,19 +56,28 @@ const NO_STORE_VALUE = "__no_store__";
 export function ProductDialog({
   categoryPaths,
   defaultCategoryId,
+  defaultName,
   product,
   existingStores,
+  open: openProp,
+  onOpenChange: onOpenChangeProp,
+  onCreated,
   children,
 }: ProductDialogProps) {
   const router = useRouter();
   const isEdit = !!product;
 
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = (next: boolean) => {
+    if (openProp === undefined) setInternalOpen(next);
+    onOpenChangeProp?.(next);
+  };
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const [name, setName] = useState(product?.name ?? "");
+  const [name, setName] = useState(product?.name ?? defaultName ?? "");
   const [categoryId, setCategoryId] = useState<string>(
     product?.categoryId ?? defaultCategoryId ?? ""
   );
@@ -90,7 +106,7 @@ export function ProductDialog({
       setStock(String(product.stock));
       setConversions(product.conversions ?? []);
     } else {
-      setName("");
+      setName(defaultName ?? "");
       setCategoryId(defaultCategoryId ?? "");
       setStore("");
       setPackageSize("");
@@ -146,6 +162,9 @@ export function ProductDialog({
         : await createProductAction(input);
 
       if (result.ok) {
+        if (!product && "id" in result && typeof result.id === "string") {
+          onCreated?.(result.id);
+        }
         resetForm();
         setOpen(false);
         router.refresh();
@@ -173,7 +192,7 @@ export function ProductDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogTrigger render={children} />
+        {children && <DialogTrigger render={children} />}
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>

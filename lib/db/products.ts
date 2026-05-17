@@ -41,7 +41,7 @@ export interface NewProductInput {
   }>;
 }
 
-export async function insertProduct(input: NewProductInput): Promise<void> {
+export async function insertProduct(input: NewProductInput): Promise<string> {
   const supabase = await getServerSupabase();
   const priceHistory =
     input.price > 0
@@ -53,18 +53,23 @@ export async function insertProduct(input: NewProductInput): Promise<void> {
           },
         ]
       : [];
-  const { error } = await supabase.from("products").insert({
-    name: input.name,
-    store: input.store,
-    category_id: input.categoryId,
-    package_size: input.packageSize,
-    package_unit: input.packageUnit,
-    price: input.price,
-    stock: input.stock,
-    conversions: input.conversions ?? [],
-    price_history: priceHistory,
-  });
+  const { data, error } = await supabase
+    .from("products")
+    .insert({
+      name: input.name,
+      store: input.store,
+      category_id: input.categoryId,
+      package_size: input.packageSize,
+      package_unit: input.packageUnit,
+      price: input.price,
+      stock: input.stock,
+      conversions: input.conversions ?? [],
+      price_history: priceHistory,
+    })
+    .select("id")
+    .single();
   if (error) throw new Error(`insertProduct: ${error.message}`);
+  return data.id as string;
 }
 
 export async function getProduct(id: string): Promise<Product | null> {

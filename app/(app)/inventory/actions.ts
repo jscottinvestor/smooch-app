@@ -26,6 +26,9 @@ import { getServerSupabase } from "@/lib/supabase/server";
 import { ALL_UNITS } from "@/lib/units";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
+export type CreateProductResult =
+  | { ok: true; id: string }
+  | { ok: false; error: string };
 
 export async function saveStockAction(
   productId: string,
@@ -42,7 +45,7 @@ export async function saveStockAction(
 
 export async function createProductAction(
   input: NewProductInput
-): Promise<ActionResult> {
+): Promise<CreateProductResult> {
   const name = input.name?.trim();
   if (!name) return { ok: false, error: "Name is required" };
   if (!input.categoryId) return { ok: false, error: "Category is required" };
@@ -64,9 +67,10 @@ export async function createProductAction(
 
   try {
     if (input.store) await ensureStoreExists(input.store);
-    await insertProduct({ ...input, name });
+    const id = await insertProduct({ ...input, name });
     revalidatePath("/inventory");
-    return { ok: true };
+    revalidatePath("/recipes");
+    return { ok: true, id };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Create failed" };
   }
