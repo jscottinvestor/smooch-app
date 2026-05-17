@@ -316,7 +316,7 @@ export function RecipeDialog({
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger render={children} />
-        <DialogContent className="sm:max-w-lg max-h-[90vh] max-w-[calc(100%-1rem)] overflow-y-auto overflow-x-hidden p-3 sm:p-4">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] max-w-[calc(100%-1rem)] overflow-y-auto overflow-x-hidden">
           <DialogHeader>
             <DialogTitle>
               {isEdit ? `Edit ${recipe.name}` : "New recipe"}
