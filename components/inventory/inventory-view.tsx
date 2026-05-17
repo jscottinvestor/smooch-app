@@ -17,22 +17,32 @@ import { ProductDialog } from "./product-dialog";
 
 const TOP_ORDER = ["DRY INGREDIENTS", "WET INGREDIENTS", "MIX-INS"] as const;
 
-const TOP_META: Record<string, { Icon: LucideIcon; tint: string }> = {
+const TOP_META: Record<
+  string,
+  { Icon: LucideIcon; tint: string; cardBg: string }
+> = {
   "DRY INGREDIENTS": {
     Icon: Wheat,
     tint: "bg-amber-100 text-amber-700",
+    cardBg: "bg-amber-50/40",
   },
   "WET INGREDIENTS": {
     Icon: Droplets,
     tint: "bg-sky-100 text-sky-700",
+    cardBg: "bg-sky-50/40",
   },
   "MIX-INS": {
     Icon: Cookie,
     tint: "bg-rose-100 text-rose-700",
+    cardBg: "bg-rose-50/40",
   },
 };
 
-const DEFAULT_META = { Icon: Wheat, tint: "bg-muted text-foreground" };
+const DEFAULT_META = {
+  Icon: Wheat,
+  tint: "bg-muted text-foreground",
+  cardBg: "",
+};
 
 interface SubBucket {
   label: string | null;
@@ -189,7 +199,10 @@ export function InventoryView({
         return (
           <Card
             key={topId}
-            className="overflow-hidden shadow-sm shadow-foreground/[0.03]"
+            className={cn(
+              "overflow-hidden shadow-sm shadow-foreground/[0.03]",
+              meta.cardBg
+            )}
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-5">
               <CardTitle className="flex items-center gap-3 font-display text-xl font-normal">

@@ -15,6 +15,20 @@ import { RecipeDialog } from "./recipe-dialog";
 
 const TOP_ORDER = ["DRY INGREDIENTS", "WET INGREDIENTS", "MIX-INS"] as const;
 
+/** Light section tint for grouping rows + mobile group cards by top-level category. */
+function groupTint(topName: string | null): string {
+  switch (topName) {
+    case "DRY INGREDIENTS":
+      return "bg-amber-50/40";
+    case "WET INGREDIENTS":
+      return "bg-sky-50/40";
+    case "MIX-INS":
+      return "bg-rose-50/40";
+    default:
+      return "";
+  }
+}
+
 export function RecipeCard({
   recipe,
   products,
@@ -218,7 +232,13 @@ export function RecipeCard({
         {/* Mobile — stacked ingredient cards by group */}
         <div className="md:hidden">
           {grouped.map(({ topName, items }) => (
-            <div key={`m-${topName ?? "_uncat"}`} className="border-t first:border-t-0">
+            <div
+              key={`m-${topName ?? "_uncat"}`}
+              className={cn(
+                "border-t first:border-t-0",
+                groupTint(topName)
+              )}
+            >
               <div className="px-4 pt-4 pb-1 font-display text-sm text-foreground/80">
                 {topName ? topName.toLowerCase() : "uncategorized"}
                 <span className="ml-2 text-xs text-muted-foreground font-sans tabular-nums">
@@ -517,9 +537,10 @@ function GroupSection({
   recipeId: string;
   products: Product[];
 }) {
+  const tint = groupTint(topName);
   return (
     <>
-      <tr className="border-t border-border/60">
+      <tr className={cn("border-t border-border/60", tint)}>
         <td
           colSpan={5}
           className="px-5 pt-4 pb-1 font-display text-sm text-foreground/80"
@@ -536,6 +557,7 @@ function GroupSection({
           line={line}
           recipeId={recipeId}
           products={products}
+          groupTint={tint}
         />
       ))}
     </>
@@ -546,10 +568,12 @@ function IngredientRow({
   line,
   recipeId,
   products,
+  groupTint: groupTintClass,
 }: {
   line: ComputedLine;
   recipeId: string;
   products: Product[];
+  groupTint?: string;
 }) {
   const {
     ingredient,
@@ -572,7 +596,7 @@ function IngredientRow({
   const tone = lineTone(line);
 
   return (
-    <tr className={cn("hover:bg-muted/20", tone.row)}>
+    <tr className={cn("hover:bg-muted/20", groupTintClass, tone.row)}>
       <td className="px-5 py-3 font-medium">{ingredient.name}</td>
       <td className="py-3 pr-3">
         <IngredientProductPicker
