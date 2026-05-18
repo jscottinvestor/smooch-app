@@ -1,12 +1,6 @@
-import { redirect } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, MessageSquare } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { FeedbackNoteForm } from "@/components/admin/feedback-note-form";
-import { getServerSupabase, getServiceSupabase } from "@/lib/supabase/server";
-
-// Mirrors the unlimited-tier allowlist in lib/limits.ts. Add an email
-// here to grant access to this admin feedback inbox.
-const ADMIN_EMAILS = new Set<string>(["j@jscott.com"]);
+import { getServiceSupabase } from "@/lib/supabase/server";
 
 interface FeedbackRow {
   id: string;
@@ -21,17 +15,8 @@ interface FeedbackRow {
 export const dynamic = "force-dynamic";
 
 export default async function FeedbackAdminPage() {
-  // Gate on email — non-admin signed-in users land on the dashboard.
-  const supabase = await getServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const email = user?.email?.toLowerCase();
-  if (!email || !ADMIN_EMAILS.has(email)) {
-    redirect("/dashboard");
-  }
-
-  // Use the service-role client to bypass RLS and read everyone's feedback.
+  // Auth gate is handled by app/admin/layout.tsx. Use the service-role
+  // client to bypass RLS and read everyone's feedback.
   const service = getServiceSupabase();
   const { data, error } = await service
     .from("feedback")
@@ -40,27 +25,13 @@ export default async function FeedbackAdminPage() {
     .limit(500);
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6 space-y-5">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <Link
-            href="/dashboard"
-            className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-          >
-            <ArrowLeft className="w-3 h-3" />
-            Back to dashboard
-          </Link>
-          <h1
-            className="font-display text-3xl tracking-tight mt-2"
-            style={{ fontVariationSettings: '"opsz" 144, "SOFT" 50' }}
-          >
-            Feedback inbox
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {error ? "Error loading feedback" : `${data?.length ?? 0} entries`}
-            {data && data.length >= 500 ? " (showing most recent 500)" : ""}
-          </p>
-        </div>
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-xl font-semibold">Feedback inbox</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          {error ? "Error loading feedback" : `${data?.length ?? 0} entries`}
+          {data && data.length >= 500 ? " (showing most recent 500)" : ""}
+        </p>
       </div>
 
       {error ? (
@@ -73,7 +44,7 @@ export default async function FeedbackAdminPage() {
           No feedback yet.
         </div>
       ) : (
-        <ul className="space-y-3">
+        <ul className="space-y-3 max-w-3xl">
           {(data as FeedbackRow[]).map((f) => (
             <li
               key={f.id}

@@ -6,6 +6,7 @@ import { ShoppingListDialog } from "@/components/dashboard/shopping-list-dialog"
 import { ChatButton } from "@/components/chat-button";
 import { FeedbackButton } from "@/components/feedback-button";
 import { HelpButton } from "@/components/help-button";
+import { WelcomeDialog } from "@/components/welcome-dialog";
 import { Button } from "@/components/ui/button";
 import { listCategories } from "@/lib/db/categories";
 import { listProducts } from "@/lib/db/products";
@@ -72,6 +73,7 @@ export default async function AppLayout({
         <ChatButton />
         <HelpButton />
       </footer>
+      <WelcomeDialog userId={user?.id ?? null} />
     </div>
   );
 }
