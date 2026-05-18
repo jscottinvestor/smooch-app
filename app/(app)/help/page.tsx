@@ -29,7 +29,7 @@ const VIDEOS: VideoEntry[] = [
     title: "Tour of the Dashboard",
     description:
       "The home base. See inventory value at a glance, jump into recipes, spot what's out of stock, and review cost-per-item for every recipe in one table.",
-    source: { kind: "pending" },
+    source: { kind: "youtube", id: "ul3-CVPg_cI" },
   },
   {
     tab: "Recipes",
