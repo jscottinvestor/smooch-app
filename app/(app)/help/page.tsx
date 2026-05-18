@@ -56,7 +56,7 @@ const VIDEOS: VideoEntry[] = [
     title: "Scanning a grocery receipt",
     description:
       "Snap a receipt with your phone, review what Claude pulled off it, and apply — prices update, stock goes up, new items get added to your inventory automatically.",
-    source: { kind: "pending" },
+    source: { kind: "youtube", id: "bZwEAjRLWgc" },
   },
 ];
 
