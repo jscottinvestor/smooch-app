@@ -3,6 +3,7 @@ import { TabBar } from "@/components/nav/tab-bar";
 import { UserMenu } from "@/components/nav/user-menu";
 import { BakeDialog } from "@/components/dashboard/bake-dialog";
 import { ShoppingListDialog } from "@/components/dashboard/shopping-list-dialog";
+import { ChatButton } from "@/components/chat-button";
 import { FeedbackButton } from "@/components/feedback-button";
 import { Button } from "@/components/ui/button";
 import { listCategories } from "@/lib/db/categories";
@@ -65,8 +66,9 @@ export default async function AppLayout({
         }
       />
       <main className="flex-1 py-8">{children}</main>
-      <footer className="border-t mt-4 py-3 flex justify-center">
+      <footer className="border-t mt-4 py-3 flex flex-col items-center gap-1">
         <FeedbackButton />
+        <ChatButton />
       </footer>
     </div>
   );
