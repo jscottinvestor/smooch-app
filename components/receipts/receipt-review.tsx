@@ -607,7 +607,7 @@ function NewControls({
           </Label>
           <Input
             type="number"
-            step="0.01"
+            step="0.001"
             min="0"
             value={String(line.newProduct.packageSize)}
             onChange={(e) =>

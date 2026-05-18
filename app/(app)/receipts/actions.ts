@@ -10,6 +10,7 @@ import {
   findCanonicalStoreName,
   rememberStoreAlias,
 } from "@/lib/db/stores";
+import { roundQty } from "@/lib/format";
 import { checkReceiptLimit } from "@/lib/limits";
 import { normalizeAlias } from "@/lib/matching";
 import {
@@ -195,11 +196,12 @@ export async function applyReceiptAction(
         updates.package_unit = line.newProduct.packageUnit;
       }
 
-      // Stock bump
+      // Stock bump — round to 3 decimals so repeated receipts don't
+      // accumulate floating-point dust.
       let stockBump = 0;
       if (line.markReceived) {
         stockBump = line.qty || 1;
-        updates.stock = (product.stock || 0) + stockBump;
+        updates.stock = roundQty((product.stock || 0) + stockBump);
         summary.stockBumped += stockBump;
       }
 

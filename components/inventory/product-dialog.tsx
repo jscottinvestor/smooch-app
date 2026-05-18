@@ -304,7 +304,7 @@ export function ProductDialog({
               <Field label="Package size">
                 <Input
                   type="number"
-                  step="0.01"
+                  step="0.001"
                   min="0"
                   value={packageSize}
                   onChange={(e) => setPackageSize(e.target.value)}
@@ -347,7 +347,7 @@ export function ProductDialog({
               <Field label={isEdit ? "Stock (packages)" : "Initial stock"}>
                 <Input
                   type="number"
-                  step="0.01"
+                  step="0.001"
                   min="0"
                   value={stock}
                   onChange={(e) => setStock(e.target.value)}
@@ -533,7 +533,7 @@ function ConversionsEditor({
             >
               <Input
                 type="number"
-                step="0.01"
+                step="0.001"
                 min="0"
                 value={String(c.fromQty)}
                 onChange={(e) =>
@@ -560,7 +560,7 @@ function ConversionsEditor({
               <span className="text-muted-foreground px-1">=</span>
               <Input
                 type="number"
-                step="0.01"
+                step="0.001"
                 min="0"
                 value={String(c.toQty)}
                 onChange={(e) =>

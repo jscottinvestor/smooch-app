@@ -548,7 +548,7 @@ function IngredientEditRow({
       <div className="flex items-center gap-1.5 min-w-0 max-w-full">
         <Input
           type="number"
-          step="0.01"
+          step="0.001"
           min="0"
           value={draft.quantity}
           onChange={(e) => onChange({ quantity: e.target.value })}

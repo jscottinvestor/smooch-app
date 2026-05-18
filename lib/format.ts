@@ -1,7 +1,16 @@
 export function formatQty(n: number | null | undefined): string {
   if (n === null || n === undefined || Number.isNaN(n)) return "—";
   if (Number.isInteger(n)) return String(n);
-  return n.toFixed(2).replace(/\.?0+$/, "");
+  return n.toFixed(3).replace(/\.?0+$/, "");
+}
+
+/**
+ * Round a quantity to 3 decimal places. Used to keep stock and other
+ * quantity values from accumulating floating-point dust through repeated
+ * add/subtract operations (receipts add to stock, bakes subtract from it).
+ */
+export function roundQty(n: number): number {
+  return Math.round(n * 1000) / 1000;
 }
 
 export function formatMoney(

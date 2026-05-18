@@ -13,6 +13,7 @@ import {
 import { listProducts } from "@/lib/db/products";
 import { computeBakeUsage, type BakePlanEntry } from "@/lib/bake";
 import { listRecipes } from "@/lib/db/recipes";
+import { roundQty } from "@/lib/format";
 import { checkRecipeLimit } from "@/lib/limits";
 import { bestProductMatch } from "@/lib/matching";
 import {
@@ -228,7 +229,7 @@ export async function bakeRecipesAction(
     for (const u of result.usage) {
       const { error } = await supabase
         .from("products")
-        .update({ stock: u.newStock })
+        .update({ stock: roundQty(u.newStock) })
         .eq("id", u.productId);
       if (error) {
         return {

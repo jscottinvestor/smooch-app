@@ -21,6 +21,7 @@ import {
   insertStore,
   renameStore,
 } from "@/lib/db/stores";
+import { roundQty } from "@/lib/format";
 import { checkProductLimit } from "@/lib/limits";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { ALL_UNITS } from "@/lib/units";
@@ -35,7 +36,7 @@ export async function saveStockAction(
   stock: number
 ): Promise<ActionResult> {
   try {
-    await setProductStock(productId, stock);
+    await setProductStock(productId, roundQty(stock));
     revalidatePath("/inventory");
     return { ok: true };
   } catch (e) {

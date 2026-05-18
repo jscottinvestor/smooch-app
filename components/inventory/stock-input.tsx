@@ -45,7 +45,7 @@ export function StockInput({
     <div className="flex items-center gap-1">
       <Input
         type="number"
-        step="0.01"
+        step="0.001"
         min="0"
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
