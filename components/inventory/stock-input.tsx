@@ -57,7 +57,7 @@ export function StockInput({
             (e.target as HTMLInputElement).blur();
           }
         }}
-        className="h-7 w-16 text-right text-xs"
+        className="h-7 w-20 text-right text-xs tabular-nums"
         title={errorMsg ?? "Number of packages in stock"}
         aria-invalid={errorMsg ? true : undefined}
       />

@@ -553,7 +553,7 @@ function IngredientEditRow({
           value={draft.quantity}
           onChange={(e) => onChange({ quantity: e.target.value })}
           placeholder="0"
-          className="h-8 w-14 text-right text-xs tabular-nums shrink-0"
+          className="h-8 w-20 text-right text-xs tabular-nums shrink-0"
         />
         <Select
           value={draft.unit}

@@ -539,7 +539,7 @@ function ConversionsEditor({
                 onChange={(e) =>
                   update(i, { fromQty: parseFloat(e.target.value) || 0 })
                 }
-                className="h-8 w-14 text-right text-xs tabular-nums"
+                className="h-8 w-20 text-right text-xs tabular-nums"
               />
               <Select
                 value={c.fromUnit}
@@ -566,7 +566,7 @@ function ConversionsEditor({
                 onChange={(e) =>
                   update(i, { toQty: parseFloat(e.target.value) || 0 })
                 }
-                className="h-8 w-16 text-right text-xs tabular-nums"
+                className="h-8 w-20 text-right text-xs tabular-nums"
               />
               <Select
                 value={c.toUnit}
