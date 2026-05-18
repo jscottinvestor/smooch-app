@@ -47,7 +47,7 @@ const VIDEOS: VideoEntry[] = [
     title: "Managing your ingredients & stores",
     description:
       "Add products, set package sizes and conversions, organize them by category, and use Manage Stores to keep store names tidy.",
-    source: { kind: "pending" },
+    source: { kind: "youtube", id: "mjMWTYNECX4" },
   },
   {
     tab: "Receipts",
