@@ -5,6 +5,7 @@ import { BakeDialog } from "@/components/dashboard/bake-dialog";
 import { ShoppingListDialog } from "@/components/dashboard/shopping-list-dialog";
 import { ChatButton } from "@/components/chat-button";
 import { FeedbackButton } from "@/components/feedback-button";
+import { HelpButton } from "@/components/help-button";
 import { Button } from "@/components/ui/button";
 import { listCategories } from "@/lib/db/categories";
 import { listProducts } from "@/lib/db/products";
@@ -69,6 +70,7 @@ export default async function AppLayout({
       <footer className="border-t mt-4 py-3 flex flex-col items-center gap-1">
         <FeedbackButton />
         <ChatButton />
+        <HelpButton />
       </footer>
     </div>
   );
