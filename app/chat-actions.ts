@@ -42,9 +42,9 @@ The app has these sections, accessed via tabs at the top:
 ## Free tier limits
 
 Every account starts on the free tier:
-- Up to 2 recipes
-- Up to 30 ingredients
-- Up to 10 scanned receipts per month
+- Up to 5 recipes
+- Up to 50 ingredients
+- Up to 30 scanned receipts per month
 
 When a limit is hit, the app shows "Free Tier Limit Reached: …" inline. A paid tier with no limits is planned but not yet available.
 

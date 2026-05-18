@@ -7,9 +7,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  * during development.
  */
 export const FREE_TIER = {
-  recipes: 2,
-  products: 30,
-  receiptsPerMonth: 10,
+  recipes: 5,
+  products: 50,
+  receiptsPerMonth: 30,
 } as const;
 
 const UNLIMITED_EMAILS = new Set<string>([
