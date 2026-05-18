@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Users } from "lucide-react";
 import { getServiceSupabase } from "@/lib/supabase/server";
 
@@ -136,13 +137,22 @@ export default async function UsersAdminPage() {
                       {fmtDate(u.lastSignInAt)}
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums">
-                      {u.recipes}
+                      <CountLink
+                        href={`/admin/users/${u.id}/recipes`}
+                        value={u.recipes}
+                      />
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums">
-                      {u.ingredients}
+                      <CountLink
+                        href={`/admin/users/${u.id}/ingredients`}
+                        value={u.ingredients}
+                      />
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums">
-                      {u.receipts}
+                      <CountLink
+                        href={`/admin/users/${u.id}/receipts`}
+                        value={u.receipts}
+                      />
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums">
                       {u.feedback}
@@ -184,9 +194,21 @@ export default async function UsersAdminPage() {
                     </div>
                   </div>
                   <div className="grid grid-cols-4 gap-2 text-center">
-                    <Stat label="Recipes" value={u.recipes} />
-                    <Stat label="Ingred." value={u.ingredients} />
-                    <Stat label="Receipts" value={u.receipts} />
+                    <Stat
+                      label="Recipes"
+                      value={u.recipes}
+                      href={`/admin/users/${u.id}/recipes`}
+                    />
+                    <Stat
+                      label="Ingred."
+                      value={u.ingredients}
+                      href={`/admin/users/${u.id}/ingredients`}
+                    />
+                    <Stat
+                      label="Receipts"
+                      value={u.receipts}
+                      href={`/admin/users/${u.id}/receipts`}
+                    />
                     <Stat label="Feedback" value={u.feedback} />
                   </div>
                 </li>
@@ -199,13 +221,41 @@ export default async function UsersAdminPage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
+function CountLink({ href, value }: { href: string; value: number }) {
+  if (value === 0) return <span className="text-muted-foreground">0</span>;
   return (
-    <div className="rounded border bg-card px-2 py-1.5">
+    <Link href={href} className="text-foreground underline hover:no-underline">
+      {value}
+    </Link>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  href,
+}: {
+  label: string;
+  value: number;
+  href?: string;
+}) {
+  const inner = (
+    <>
       <div className="text-base font-semibold tabular-nums">{value}</div>
       <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
         {label}
       </div>
-    </div>
+    </>
   );
+  if (href && value > 0) {
+    return (
+      <Link
+        href={href}
+        className="rounded border bg-card px-2 py-1.5 hover:bg-muted/40 transition-colors"
+      >
+        {inner}
+      </Link>
+    );
+  }
+  return <div className="rounded border bg-card px-2 py-1.5">{inner}</div>;
 }
