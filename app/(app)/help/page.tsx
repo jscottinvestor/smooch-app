@@ -38,7 +38,7 @@ const VIDEOS: VideoEntry[] = [
     title: "Building and pricing recipes",
     description:
       "How to add a recipe (by hand or by phone-camera photo), link ingredients to inventory products, and use the auto-match button to fill in the rest.",
-    source: { kind: "pending" },
+    source: { kind: "youtube", id: "tKQ2eguWFqM" },
   },
   {
     tab: "Ingredients",
