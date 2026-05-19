@@ -1,9 +1,9 @@
 "use client";
 
-import { Loader2, MailCheck } from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,6 +44,10 @@ export function AuthForm({ mode }: AuthFormProps) {
         setBusy(false);
         return;
       }
+      // Email confirmation is disabled, so signUp auto-creates a session.
+      // Sign out so the user lands on /login as a fresh, unauthenticated
+      // visitor and signs in deliberately.
+      await supabase.auth.signOut();
       setSignupSucceeded(true);
       setBusy(false);
       return;
@@ -80,25 +84,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   if (signupSucceeded) {
-    return (
-      <div className="w-full max-w-sm rounded-lg border bg-card p-6 space-y-4">
-        <div className="flex items-center gap-2 text-emerald-700">
-          <MailCheck className="w-5 h-5" />
-          <h1 className="text-lg font-semibold">Check your email</h1>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          We sent a confirmation link to{" "}
-          <span className="font-medium text-foreground">{email}</span>. Click
-          it to finish creating your account.
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Already confirmed?{" "}
-          <Link href="/login" className="underline">
-            Sign in
-          </Link>
-        </p>
-      </div>
-    );
+    return <SignupSuccess email={email} />;
   }
 
   return (
@@ -196,6 +182,34 @@ export function AuthForm({ mode }: AuthFormProps) {
         )}
       </p>
     </form>
+  );
+}
+
+function SignupSuccess({ email }: { email: string }) {
+  const router = useRouter();
+  useEffect(() => {
+    const t = setTimeout(() => router.replace("/login"), 3000);
+    return () => clearTimeout(t);
+  }, [router]);
+
+  return (
+    <div className="w-full max-w-sm rounded-lg border bg-card p-6 space-y-4">
+      <div className="flex items-center gap-2 text-emerald-700">
+        <CheckCircle2 className="w-5 h-5" />
+        <h1 className="text-lg font-semibold">You&apos;re registered!</h1>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        Account created for{" "}
+        <span className="font-medium text-foreground">{email}</span>. Sending
+        you to the sign-in page…
+      </p>
+      <Link
+        href="/login"
+        className="inline-flex w-full items-center justify-center rounded-md bg-foreground text-background px-4 py-2 text-sm font-medium hover:opacity-90"
+      >
+        Go to sign in
+      </Link>
+    </div>
   );
 }
 
